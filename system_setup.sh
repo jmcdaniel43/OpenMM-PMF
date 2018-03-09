@@ -1,12 +1,13 @@
 #!/bin/bash
 
 root=..
+sys="bf4_tmea_dce"
+
 mkdir -p "ffdir"
 mkdir -p "pdb"
 
 for j in {1,2}
 do
-
     for i in {7,10,14}
     do
         cd "ffdir"
@@ -15,22 +16,16 @@ do
         cd ..
 
         cd "pdb"
+        cd $sys
 
-        $root/bin/build_electrode.pl $root/setup_data/graph.pdb $j > electrode.tmp
-        $root/bin/deleteAtoms.py pore $i electrode.tmp > electrode.pdb
+        $root/../bin/build_electrode.pl $root/../setup_data/graph.pdb $j > electrode.tmp
+        $root/../bin/deleteAtoms.py pore $i electrode.tmp > electrode.pdb
         rm electrode.tmp
 
-        cat electrode.pdb $root/setup_data/electrolyte.pdb > SC_start_${j}_${i}.pdb
+        cat electrode.pdb $root/../setup_data/${sys}.pdb > SC_start_${j}_${i}.pdb
         rm electrode.pdb
 
-        # echo "Deleting remarks from packmol"
-        # elLines=`wc -l $root/setup_data/electrolyte.pdb | awk '{print $1}'`
-        # totalLines=`wc -l SC_start_${j}_${i}.pdb | awk '{print $1}'`
-        # startOfRemark=`expr $totalLines - $elLines - 1` # delete up to the END line of the first file
-        # ending=`expr $startOfRemark +  6`
-        # sed -i -e "${startOfRemark},${ending}d" SC_start_${j}_${i}.pdb
-
-
+        cd ..
         cd ..
     done
 
