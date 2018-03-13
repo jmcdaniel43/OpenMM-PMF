@@ -74,7 +74,7 @@ def findCenterOfPore(sim):
 
     return coords[0], coords[1], coords[2]
 
-def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy):
+def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index):
     """
     Apply an umbrella potential window at the specified distanceFromPore
     from the edge of the pore for the Boron atom in the first BF4 residue.
@@ -87,6 +87,8 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy):
         Number of umbrella potentials to be used
     kxy: float
         Force constant for the potential in the x, y dimensions.
+    atomselection: int
+        Index of the ion that the potential should operate on.
 
     Returns
     ______
@@ -98,16 +100,6 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy):
     """
 
     print('Setting umbrella forces about equilibrated pore')
-
-    # Locate ion
-    name='BF4'
-    aname='B'
-    index=-1
-    for res in sim.simmd.topology.residues():
-        if res.name == name:
-            index = res._atoms[0].index
-            break
-    print("Ion index:", index)
 
     centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim)
     x0 = centerCoords[0]
@@ -134,7 +126,7 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy):
     XYForce.addGlobalParameter('y0', y0)
     XYForce.addGlobalParameter('kxy', kxy)
 
-    return index, [x0, y0, z0], dz
+    return [x0, y0, z0], dz
 
 def restrainGrapheneSheets(sim, restrained_atoms, z0graph):
     state = sim.simmd.context.getState(getPositions=True)

@@ -1,5 +1,5 @@
 tolerance  2.0
-output    electrolyte.pdb
+output    bf4_tmea_acn.pdb
 
 structure  TMEA.pdb
   number 50

@@ -4,4 +4,6 @@ __pycache__
 1sheet
 2sheet
 output_logs
+slurm_scripts
+pdb
 

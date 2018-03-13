@@ -5,27 +5,30 @@ import sys
 import glob
 
 def main():
-    if len(sys.argv) < 7:
-        print("USAGE: <input file> <spring constant> <start> <dz> <nstep> <numbrella>")
+    if len(sys.argv) < 6:
+        print("USAGE: <input file> <spring constant> <dz> <nstep> <numbrella>")
         exit()
 
     springConstant = float(sys.argv[2])
-    start          = float(sys.argv[3])
-    dz             = float(sys.argv[4])
-    nstep          = int(sys.argv[5])
-    numbrella      = int(sys.argv[6])
+    dz             = float(sys.argv[3])
+    nstep          = int(sys.argv[4])
+    numbrella      = int(sys.argv[5])
 
-    zDimensionRegexString = r"\((-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?)\) nm"
-    maxZDimensionRegex = re.compile("Box dimensions:  " + zDimensionRegexString)
-    zLocationRegex = re.compile(zDimensionRegexString)
+    zDimensionRegexString = r"(-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?)"
+    maxZDimensionRegex = re.compile("Box dimensions:  \(" + zDimensionRegexString + "\) nm")
+    startingPotentialDimensionRegex = re.compile("Center of umbrella potential \(nm\) \[" + zDimensionRegexString + "\]")
+    zLocationRegex = re.compile("\(" + zDimensionRegexString + "\)")
     startRegex = re.compile("Starting Production")
     with open(sys.argv[1]) as f:
         # find start and maximum z dimension from output file
         lines = f.readlines()
         for line in range(len(lines)):
-            z_match = maxZDimensionRegex.match(lines[line])
-            if z_match is not None:
-                maxZ = float(z_match.group(5)) * 10 # convert nm to angstrom
+            maxZ_match = maxZDimensionRegex.match(lines[line])
+            startZ_match = startingPotentialDimensionRegex.match(lines[line])
+            if maxZ_match is not None:
+                maxZ = float(maxZ_match.group(5)) * 10 # convert nm to angstrom
+            if startZ_match is not None:
+                start = float(startZ_match.group(5)) * 10
             if startRegex.match(lines[line]) is not None:
                 line += 1
                 break

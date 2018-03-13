@@ -1461,11 +1461,11 @@
   <Particle type1="dchl-DCT1" type2="dchl-CT1" charge="-1.252" polarizability="0.002324" thole="1"/>
   <Particle type1="dchl-DCl" type2="dchl-Cl" charge="-1.282" polarizability="0.002435" thole="1"/>
   <Particle type1="dchl-DCl1" type2="dchl-Cl1" charge="-1.282" polarizability="0.002435" thole="1"/>
-  <Particle type1="TMA-DC3" type2="TMEA-C3" charge="-1.148" polarizability="0.001953" thole="1"/>
-  <Particle type1="TMA-DN" type2="TMEA-N" charge="-0.959" polarizability="0.001363" thole="1"/>
-  <Particle type1="TMA-DC1" type2="TMEA-C1" charge="-1.148" polarizability="0.001953" thole="1"/>
-  <Particle type1="TMA-DC" type2="TMEA-C" charge="-1.148" polarizability="0.001953" thole="1"/>
-  <Particle type1="TMA-DC2" type2="TMEA-C2" charge="-1.148" polarizability="0.001953" thole="1"/>
+  <Particle type1="TMA-DC3" type2="TMA-C3" charge="-1.148" polarizability="0.001953" thole="1"/>
+  <Particle type1="TMA-DN" type2="TMA-N" charge="-0.959" polarizability="0.001363" thole="1"/>
+  <Particle type1="TMA-DC1" type2="TMA-C1" charge="-1.148" polarizability="0.001953" thole="1"/>
+  <Particle type1="TMA-DC" type2="TMA-C" charge="-1.148" polarizability="0.001953" thole="1"/>
+  <Particle type1="TMA-DC2" type2="TMA-C2" charge="-1.148" polarizability="0.001953" thole="1"/>
   <Particle type1="TMEA-DC4" type2="TMEA-C4" charge="-1.148" polarizability="0.001953" thole="1"/>
   <Particle type1="TMEA-DC3" type2="TMEA-C3" charge="-1.148" polarizability="0.001953" thole="1"/>
   <Particle type1="TMEA-DN" type2="TMEA-N" charge="-0.959" polarizability="0.001363" thole="1"/>

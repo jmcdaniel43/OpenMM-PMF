@@ -11,12 +11,27 @@ import os
 from simulation import PMF_Simulation
 from restraints import *
 
+solvents = ["acn", "dce"]
+anions = {
+    "bf4": "B",
+}
+cations = {
+    "tmea": "N",
+    "tma": "N"
+}
+ionAtomNameMap = {}
+ionAtomNameMap.update(anions)
+ionAtomNameMap.update(cations)
+
 def main(filename = "md_nvt_prod"):
     parser = argparse.ArgumentParser()
-    parser.add_argument("name", help="brief description of the simulation")
-    parser.add_argument("pdb", help="PDB file with initial positions")
+    parser.add_argument("system", help="system of anions and cations to use. Syntax is <anion>_,cation1>[_<cation2>...]")
+    parser.add_argument("solvent", help="solvent to use for system", choices=solvents)
+    parser.add_argument("ion", help="residue name of ion to apply umbrella potential to", choices=list(ionAtomNameMap.keys()))
     parser.add_argument("sheets", type=int, help="number of graphene sheets per electrode", choices=[1,2])
     parser.add_argument("pore", type=int, help="pore size", choices=[7,10,14])
+    parser.add_argument("--tag", help="brief description of the simulation")
+    parser.add_argument("--pdb", help="PDB file with initial positions. Default is pdb/<solvent>/<system>/SC_start_<sheets>_<pore>.pdb")
     parser.add_argument("--ffdir", default="ffdir", help="directory containing force field files")
     parser.add_argument("--kxy", type=float, default=5, help="x-y dimension spring constant for ion constraint")
     parser.add_argument("--prefix", default="md_nvt_prod", help="prefix for output files (*.dcd, *.pdb)")
@@ -27,13 +42,18 @@ def main(filename = "md_nvt_prod"):
     print(args)
 
 
-    outdir = "{:d}sheet/{:d}pore/output_{:s}/".format(args.sheets, args.pore, args.name)
+    outdir = "{:d}sheet/{:s}/{:d}pore/output_{:s}_{:s}diff".format(args.sheets, args.solvent, args.pore, args.system, args.ion)
+    if args.tag is not None:
+        outdir += "_" + args.tag
+    outdir += "/"
     os.makedirs(outdir)
     print(outdir)
 
+    pdb = "pdb/{:s}/{:s}/SC_start_{:d}_{:d}.pdb".format(args.solvent, args.system, args.sheets, args.pore)
+
     ffdir = args.ffdir + "/"
     sim = PMF_Simulation(
-        args.pdb,
+        pdb,
         filename,
         outdir,
         bondDefinitionFiles = [
@@ -76,7 +96,22 @@ def main(filename = "md_nvt_prod"):
         print("Running 120ns of 0.02 nm windows")
         numbrella=120
 
-    index, poreCenter, dz = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy)
+    # Locate ion
+    aname = ionAtomNameMap[args.ion]
+    index=-1
+    for res in sim.simmd.topology.residues():
+        if res.name == args.ion:
+            for atom in res._atoms:
+                if atom.name == aname:
+                    print(str(atom))
+                    index = atom.index
+                    break
+            break
+    print("Ion index:", index)
+    if index == -1:
+        raise IndexError("ion index was not found in the system")
+
+    poreCenter, dz = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, index)
     print("dz", dz)
     z0 = poreCenter[2]
 

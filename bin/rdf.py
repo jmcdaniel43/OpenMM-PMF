@@ -35,7 +35,7 @@ u=Universe(topology, trajectory)
 framestart=u.trajectory.n_frames - 1199
 
 group1 = u.select_atoms("name B and resid 1")
-group2 = u.select_atoms("name CT and resname acn")
+group2 = u.select_atoms("name CT and resname dch")
 
 if args.bulk.lower() in ['t', 'tr', 'tru', 'true']:
     for ele in atoms1:
