@@ -48,6 +48,7 @@ def removeDrudes(filenames):
         call(["sed", "-i", "s/grp /grph/g", f])
         call(["sed", "-i", "s/TME /TMEA/g", f])
         call(["sed", "-i", "s/acn /acnt/g", f])
+        call(["sed", "-i", "s/dch /dchl/g", f])
         for line in open(f).readlines():
             if re.search(' D[A-Z]', line) is not None:
                 continue

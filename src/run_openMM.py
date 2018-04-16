@@ -13,11 +13,11 @@ from restraints import *
 
 solvents = ["acn", "dce"]
 anions = {
-    "bf4": "B",
+    "BF4": "B",
 }
 cations = {
-    "tmea": "N",
-    "tma": "N"
+    "TMA": "N",
+    "TMEA": "N"
 }
 ionAtomNameMap = {}
 ionAtomNameMap.update(anions)
@@ -38,6 +38,9 @@ def main(filename = "md_nvt_prod"):
     parser.add_argument("--eqNPT", default=5000, type=int, help="how long to equilibrate NPT")
     parser.add_argument("--eqNVT", default=5000, type=int, help="how long to equilibrate NVT")
     parser.add_argument("--longSample", default="false", help="whether to sample 120ns of 0.02 nm windows")
+    parser.add_argument("--gpuDevice", default='0', type=str, help="gpu device index")
+    parser.add_argument("--trajFreq", default=50000, type=int, help="how often trajectory frames are printed (fs)")
+
     args = parser.parse_args()
     print(args)
 
@@ -49,7 +52,11 @@ def main(filename = "md_nvt_prod"):
     os.makedirs(outdir)
     print(outdir)
 
-    pdb = "pdb/{:s}/{:s}/SC_start_{:d}_{:d}.pdb".format(args.solvent, args.system, args.sheets, args.pore)
+    if args.pdb is None:
+        pdb = "pdb/{:s}/{:s}/SC_start_{:d}_{:d}.pdb".format(args.solvent, args.system, args.sheets, args.pore)
+    else:
+        pdb = args.pdb
+    print("Using pdb: ", pdb)
 
     ffdir = args.ffdir + "/"
     sim = PMF_Simulation(
@@ -59,10 +66,13 @@ def main(filename = "md_nvt_prod"):
         bondDefinitionFiles = [
             ffdir+'sapt_residues.xml',
             ffdir+'graph_residue_{:d}.xml'.format(args.pore)
-        ], forceFieldFiles = [
+        ],
+        forceFieldFiles = [
             ffdir+'sapt.xml',
             ffdir+'graph_{:d}.xml'.format(args.pore)
-        ]
+        ],
+        gpuDeviceIndex = args.gpuDevice,
+        trajFreq = args.trajFreq
     )
 
     if args.eqNPT > 0:
@@ -111,7 +121,7 @@ def main(filename = "md_nvt_prod"):
     if index == -1:
         raise IndexError("ion index was not found in the system")
 
-    poreCenter, dz = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, index)
+    poreCenter, dz = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, index, args.pore)
     print("dz", dz)
     z0 = poreCenter[2]
 
@@ -124,9 +134,13 @@ def main(filename = "md_nvt_prod"):
         z0 = boxDims[2] / nanometer + z0
     print("Center of umbrella potential (nm)", poreCenter)
 
-    state = sim.simmd.context.getState(getEnergy=True,getForces=True,getVelocities=True,getPositions=True)
+    state = sim.simmd.context.getState(getEnergy=True,getForces=True,getVelocities=True,getPositions=True, enforcePeriodicBox=True)
     sim.simmd.context.reinitialize()
     sim.simmd.context.setPositions(state.getPositions())
+
+    # after reinitialization, the parameter gets reset to default value
+    # set this again to make make sure it sticks
+    sim.simmd.context.setParameter('z0',z0)
 
     print('Post-NVT (after reinitialize)')
     print('Box vectors:', sim.simmd.context.getState().getPeriodicBoxVectors())
@@ -145,16 +159,17 @@ def main(filename = "md_nvt_prod"):
 
     # loop over umbrella positions
     for iu in range(numbrella):
-       for i in range(10000):
-           # print position of Boron Atom; first print is starting position
-           state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
-           position = state.getPositions()
-           print(position[index])
+        for i in range(10000):
+            # print position of Boron Atom; first print is starting position
+            state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
+            position = state.getPositions()
+            print(position[index])
 
-           sim.simmd.step(100)
+            sim.simmd.step(100)
 
-       z0 = z0 + dz
-       sim.simmd.context.setParameter('z0',z0)
+        z0 = z0 + dz
+        sim.simmd.context.setParameter('z0',z0)
+        print("moving window z0 to", z0)
 
 
     t2 = datetime.now()

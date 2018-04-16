@@ -3,7 +3,7 @@ from simtk.openmm import *
 from simtk.unit import *
 
 class PMF_Simulation:
-    def __init__(self, pdb_name, filename, outdir, bondDefinitionFiles, forceFieldFiles):
+    def __init__(self, pdb_name, filename, outdir, bondDefinitionFiles, forceFieldFiles, gpuDeviceIndex = '0', trajFreq=50000):
         self.temperature = 300 * kelvin
         self.outdir = outdir
         self.filename = filename
@@ -47,7 +47,8 @@ class PMF_Simulation:
 
 
         platform = Platform.getPlatformByName('OpenCL')
-        properties = {'OpenCLPrecision': 'mixed','OpenCLDeviceIndex':'0'}
+        print("Using OpenCL device:", gpuDeviceIndex)
+        properties = {'OpenCLPrecision': 'mixed', 'OpenCLDeviceIndex': gpuDeviceIndex}
 
         self.simmd = Simulation(modeller.topology, self.system, integ_md, platform, properties)
         self.simmd.context.setPositions(modeller.positions)
@@ -73,7 +74,7 @@ class PMF_Simulation:
         PDBFile.writeFile(self.simmd.topology, position, open(self.outdir + self.filename + '_start_drudes.pdb', 'w'))
 
         self.simmd.reporters = [
-            DCDReporter(self.outdir + self.filename + '.dcd', 50000),
+            DCDReporter(self.outdir + self.filename + '.dcd', trajFreq),
             CheckpointReporter(self.outdir + self.filename + '.chk', 10000)
         ]
         self.simmd.reporters[1].report(self.simmd,state)
@@ -95,7 +96,8 @@ class PMF_Simulation:
 
         state = self.simmd.context.getState(getPositions=True)
         initialPositions = state.getPositions()
-        self.simmd.context.reinitialize(True)
+        self.simmd.context.reinitialize()
+        self.simmd.context.setPositions(initialPositions)
 
         barofreq = barostat.getFrequency()
         print("barofreq: ", barofreq)

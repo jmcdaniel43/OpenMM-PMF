@@ -5,57 +5,60 @@ import sys
 import glob
 
 def main():
-    if len(sys.argv) < 6:
-        print("USAGE: <input file> <spring constant> <dz> <nstep> <numbrella>")
+    if len(sys.argv) < 5:
+        print("USAGE: <input file> <spring constant> <nstep> <numbrella>")
         exit()
 
     springConstant = float(sys.argv[2])
-    dz             = float(sys.argv[3])
-    nstep          = int(sys.argv[4])
-    numbrella      = int(sys.argv[5])
+    nstep          = int(sys.argv[3])
+    numbrella      = int(sys.argv[4])
+
+    boundaryTolerance = 20
 
     zDimensionRegexString = r"(-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?), (-?[0-9]+\.[0-9]+(e-[0-9]+)?)"
     maxZDimensionRegex = re.compile("Box dimensions:  \(" + zDimensionRegexString + "\) nm")
     startingPotentialDimensionRegex = re.compile("Center of umbrella potential \(nm\) \[" + zDimensionRegexString + "\]")
     zLocationRegex = re.compile("\(" + zDimensionRegexString + "\)")
     startRegex = re.compile("Starting Production")
+    dzRegex = re.compile("dz (\d+\.\d+)")
+
     with open(sys.argv[1]) as f:
         # find start and maximum z dimension from output file
         lines = f.readlines()
         for line in range(len(lines)):
             maxZ_match = maxZDimensionRegex.match(lines[line])
             startZ_match = startingPotentialDimensionRegex.match(lines[line])
+            dz_match = dzRegex.match(lines[line])
+
             if maxZ_match is not None:
                 maxZ = float(maxZ_match.group(5)) * 10 # convert nm to angstrom
-            if startZ_match is not None:
-                start = float(startZ_match.group(5)) * 10
-            if startRegex.match(lines[line]) is not None:
+
+            elif startZ_match is not None:
+                start = float(startZ_match.group(5)) * 10 # convert nm to angstrom
+
+            elif dz_match is not None:
+                dz = float(dz_match.group(1)) * 10 # convert nm to angstrom
+
+            elif startRegex.match(lines[line]) is not None:
                 line += 1
                 break
 
         # copy z location data into binned files
         for i in range(numbrella):
-
-            z = start + dz * i # center of current umbrella potential
+            # z = start + dz * (i + 1) # center of current umbrella potential
+            z = start + dz * i # some early simulations incremented dz at the beginning, so use line above
 
             with open("umbrella_{:0.15f}".format(z), "w") as ofile:
                 for j in range(nstep):
                     zpos_match = zLocationRegex.match(lines[line])
                     if zpos_match is not None:
                         zpos = float(zpos_match.group(5)) * 10 # convert nm to angstrom
-                        if zpos - start < 0: # then the ion has crossed the boundary of the period image
-                            zpos = maxZ + zpos # just add into +z dimension past the end of the box
-                                # this prevents us from having to make wham deal with wrapping
-                    else: # this is probably if the file is too short, wrong parameters
+                        if abs(zpos - z) > boundaryTolerance:   # then we will assume the ion has crossed the boundary of the period image
+                            zpos = maxZ + zpos                  # just add into +z dimension past the end of the box
+                                                                # this prevents us from having to make wham deal with wrapping
+                    else: # this probably happens the file is too short or if the parameters are invalid
                         print(lines[line])
 
-                    # pos  = lines[line].split(',')
-                    # try:
-                    #     zpos = float(pos[2].split(')')[0]) * 10 # convert nm to angstrom
-                    #     if zpos - start < 0: # then the ion has crossed the boundary of the period image
-                    #         zpos = maxZ + zpos # just add into +z dimension past the end of the box
-                    #             # this prevents us from having to make wham deal with wrapping
-                    #     print(pos)
                     ofile.write("{:d}   {:0.15f}\n".format(j, zpos))
                     line += 1
 

@@ -34,8 +34,8 @@ u=Universe(topology, trajectory)
 # frame to start
 framestart=u.trajectory.n_frames - 1199
 
-group1 = u.select_atoms("name B and resid 1")
-group2 = u.select_atoms("name CT and resname dch")
+group1 = u.select_atoms("resname BF4 and resid 1 and name B")
+group2 = u.select_atoms("name CT and resname acn")
 
 if args.bulk.lower() in ['t', 'tr', 'tru', 'true']:
     for ele in atoms1:
@@ -58,7 +58,7 @@ boxVolume = box_volume(dims)
 density = group2.n_atoms / boxVolume
 
 for rdf in rdfs:
-    data = map(lambda (i, g): g * rdf.bins[i]**2, enumerate(rdf.rdf[:end]))
+    data = [g * rdf.bins[i]**2 for i, g in enumerate(rdf.rdf[:end])]
     coordinationNum = (4 * 3.14159 * density) * sp.integrate.trapz(data, rdf.bins[:len(data)])
     print(coordinationNum)
     # for i in range(len(rdf.bins)):

@@ -2,7 +2,9 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 
-def findCenterOfPore(sim):
+import numpy as np
+
+def findCenterOfPore(sim, poreSize):
     """
     Find relevant C atoms on the edge of the pore.
 
@@ -17,6 +19,11 @@ def findCenterOfPore(sim):
     and the exterior edge will by that defined by resid
     len(sim.sheets) // 2 + 1.
 
+    It is important that the periodic image that is being used for the
+    calculation contains the entire pore on one sheet. Using half of a sheet
+    from consecutive periodic images will  will place the center of the
+    pore at the boundary between sheets.
+
     Returns
     ______
     center of pore: [x0, y0, z0]
@@ -29,6 +36,7 @@ def findCenterOfPore(sim):
     # interior: 1
     # exterior: 2
     coords = [[0.0] * 3, [0.0] * 3, [0.0] * 3]
+    coords = [np.array([0.0, 0.0, 0.0]) for x in range(3)]
     atomIndices = [[], [], []]
 
     graphRes = list(filter(lambda x: x.name == "grph", sim.simmd.topology.residues()))
@@ -59,25 +67,49 @@ def findCenterOfPore(sim):
                     atomIndices[i - 1].append(atom.index)
 
     # calculate centers
-    state = sim.simmd.context.getState(getPositions=True)
-    prePotentialPositions = state.getPositions()
+    state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
+    prePotentialPositions = state.getPositions(asNumpy=True)
+    boxDims = sim.simmd.topology.getUnitCellDimensions()
 
     for i, center in enumerate(atomIndices):
         for index in center:
-            coords[i][0] += prePotentialPositions[index][0] / nanometer
-            coords[i][1] += prePotentialPositions[index][1] / nanometer
-            coords[i][2] += prePotentialPositions[index][2] / nanometer
+            nextAtomPosition = prePotentialPositions[index] / nanometer
 
-        coords[i][0] /= len(center)
-        coords[i][1] /= len(center)
-        coords[i][2] /= len(center)
+            if coords[i].all() == 0.0: # not yet initialized
+                coords[i] = nextAtomPosition / len(center)
+            else:
+                for j in range(len(coords[i])):
+                    # we need to make sure that the other atom is on the same sheet image
+                    if coords[i][j] - nextAtomPosition[j] > poreSize + 0.5:
+                        # if the nextAtom is greater than 5 Angstroms more than the size of the pore
+                        #  we need to subtract the size of the box in the current dimension
+                        # to bring us to the correct atom position
+                        print("Adjusting", j, "dimension for atom", index)
+                        nextAtomPosition[j] -= boxDims[j] / nanometer
+
+                coords[i] += nextAtomPosition / len(center)
+
 
     return coords[0], coords[1], coords[2]
 
-def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index):
+
+def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSize):
     """
     Apply an umbrella potential window at the specified distanceFromPore
     from the edge of the pore for the Boron atom in the first BF4 residue.
+
+
+    If the ion is on the wrong side of the system, it tries to force its
+    way through the graphene sheet because the shortest path to the potential
+    is through the sheet rather than going through the solvent.
+
+    This is better than choosing the closest ion in the case that the closest
+    ion of interest is on the wrong side of the sheet (this could occur with
+    a dilute solvent, or other reasons).
+
+    In order to avoid this, always start the ion at the center of the system.
+    That way the shortest path to the potential will not cross through a graphene
+    sheet.
 
     Parameters
     _________
@@ -99,9 +131,15 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index):
         Distance to move the umbrella after each iteration.
     """
 
-    print('Setting umbrella forces about equilibrated pore')
+    boxVecs = sim.simmd.context.getState().getPeriodicBoxVectors(asNumpy=True)
+    boxCenter = np.array([0.0,0.0,0.0])
+    for i in boxVecs:
+        boxCenter += i / nanometer
+    boxCenter /= 2
+    print("Bringing ion to center of system:", boxCenter)
 
-    centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim)
+    print('Setting umbrella forces about equilibrated pore')
+    centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim, poreSize)
     x0 = centerCoords[0]
     y0 = centerCoords[1]
     z0 = interiorCoords[2] - distanceFromPore
@@ -115,7 +153,7 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index):
     ZForce = CustomExternalForce("0.5*kz*periodicdistance(x,y,z,x,y,z0)^2")
     sim.system.addForce(ZForce)
     ZForce.addParticle(index)
-    ZForce.addGlobalParameter('z0', z0)
+    ZForce.addGlobalParameter('z0', boxCenter[2])
     ZForce.addGlobalParameter('kz', kz)
 
     # PMF apply umbrella potential to x, y directions
@@ -125,6 +163,14 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index):
     XYForce.addGlobalParameter('x0', x0)
     XYForce.addGlobalParameter('y0', y0)
     XYForce.addGlobalParameter('kxy', kxy)
+
+    state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
+    sim.simmd.context.reinitialize()
+    sim.simmd.context.setPositions(state.getPositions())
+    sim.simmd.step(100)
+
+
+    sim.simmd.context.setParameter('z0',z0)
 
     return [x0, y0, z0], dz
 
