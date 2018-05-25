@@ -2,7 +2,9 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 
+import math
 import numpy as np
+from numpy import linalg, mod
 
 def findCenterOfPore(sim, poreSize):
     """
@@ -15,9 +17,10 @@ def findCenterOfPore(sim, poreSize):
 
     The edges of the pore will be defined by the center of the two interior
     sheets. Since the umbrellas are moving in the positive z direction,
-    the interior edge will be that defined by resid len(sim.sheets) // 2,
+    the interior edge will be that defined by resid `len(sim.sheets) // 2`,
     and the exterior edge will by that defined by resid
-    len(sim.sheets) // 2 + 1.
+    `len(sim.sheets) // 2 + 1`. Interior in this context means the sheets
+    that face the solvent.
 
     It is important that the periodic image that is being used for the
     calculation contains the entire pore on one sheet. Using half of a sheet
@@ -35,7 +38,6 @@ def findCenterOfPore(sim, poreSize):
     # center: 0
     # interior: 1
     # exterior: 2
-    coords = [[0.0] * 3, [0.0] * 3, [0.0] * 3]
     coords = [np.array([0.0, 0.0, 0.0]) for x in range(3)]
     atomIndices = [[], [], []]
 
@@ -69,26 +71,37 @@ def findCenterOfPore(sim, poreSize):
     # calculate centers
     state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
     prePotentialPositions = state.getPositions(asNumpy=True)
-    boxDims = sim.simmd.topology.getUnitCellDimensions()
+    boxDims = sim.simmd.topology.getPeriodicBoxVectors()
+    box = np.mat(boxDims / nanometer)
+    box_inv = linalg.inv(box)
 
     for i, center in enumerate(atomIndices):
+        centerCoordList = []
+
         for index in center:
             nextAtomPosition = prePotentialPositions[index] / nanometer
 
-            if coords[i].all() == 0.0: # not yet initialized
-                coords[i] = nextAtomPosition / len(center)
-            else:
-                for j in range(len(coords[i])):
-                    # we need to make sure that the other atom is on the same sheet image
-                    if coords[i][j] - nextAtomPosition[j] > poreSize + 0.5:
-                        # if the nextAtom is greater than 5 Angstroms more than the size of the pore
-                        #  we need to subtract the size of the box in the current dimension
-                        # to bring us to the correct atom position
-                        print("Adjusting", j, "dimension for atom", index)
-                        nextAtomPosition[j] -= boxDims[j] / nanometer
+            if len(centerCoordList) == 0:
+                # this is the first atom in the group
+                centerCoordList.append(nextAtomPosition)
+                continue
 
-                coords[i] += nextAtomPosition / len(center)
+            # make sure we are using the minimum image distance to the next atom
 
+            avgCenter = np.mean(centerCoordList, axis=0)
+
+            dr = nextAtomPosition - avgCenter
+            dr_box = box_inv.dot(dr).getA1() # getA1 flattens [[x,y,z]] (1x3 matrix) to [x,y,z] (vector)
+            shift_box = np.array(list(map(lambda x: math.floor(x + 0.5), dr_box)))
+
+            shift = [0.0, 0.0, 0.0]
+            if shift_box.any(): # if anything is non-zero
+                shift = box.dot(shift_box).getA1()
+                print("Adjusting minimum distance for atom", index, "with shift_box", shift_box)
+
+            centerCoordList.append(avgCenter + dr - shift)
+
+        coords[i] = np.mean(centerCoordList, axis=0)
 
     return coords[0], coords[1], coords[2]
 

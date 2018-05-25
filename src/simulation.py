@@ -46,9 +46,10 @@ class PMF_Simulation:
             totmass += self.system.getParticleMass(i)
 
 
-        platform = Platform.getPlatformByName('OpenCL')
-        print("Using OpenCL device:", gpuDeviceIndex)
-        properties = {'OpenCLPrecision': 'mixed', 'OpenCLDeviceIndex': gpuDeviceIndex}
+        platform = Platform.getPlatformByName('CUDA')
+        print("Using GPU device:", gpuDeviceIndex)
+        #properties = {'OpenCLPrecision': 'mixed', 'OpenCLDeviceIndex': gpuDeviceIndex}
+        properties = {'Precision': 'mixed'}
 
         self.simmd = Simulation(modeller.topology, self.system, integ_md, platform, properties)
         self.simmd.context.setPositions(modeller.positions)

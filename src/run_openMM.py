@@ -37,9 +37,12 @@ def main(filename = "md_nvt_prod"):
     parser.add_argument("--prefix", default="md_nvt_prod", help="prefix for output files (*.dcd, *.pdb)")
     parser.add_argument("--eqNPT", default=5000, type=int, help="how long to equilibrate NPT")
     parser.add_argument("--eqNVT", default=5000, type=int, help="how long to equilibrate NVT")
-    parser.add_argument("--longSample", default="false", help="whether to sample 120ns of 0.02 nm windows")
+    parser.add_argument("--longSample", action="store_true", help="whether to sample 120ns of 0.02 nm windows")
     parser.add_argument("--gpuDevice", default='0', type=str, help="gpu device index")
     parser.add_argument("--trajFreq", default=50000, type=int, help="how often trajectory frames are printed (fs)")
+    parser.add_argument("-f", "--forceOverwrite", action="store_true", help="force overwrite of existing data")
+    parser.add_argument("--windowSize", default=10000, type=int, help="length of time to spend in each potential window (units of 0.1 ps)")
+    parser.add_argument("--eqOnly", action="store_true", help="use if you want to end the simulation after equilibration")
 
     args = parser.parse_args()
     print(args)
@@ -49,7 +52,11 @@ def main(filename = "md_nvt_prod"):
     if args.tag is not None:
         outdir += "_" + args.tag
     outdir += "/"
-    os.makedirs(outdir)
+    try:
+        os.makedirs(outdir)
+    except FileExistsError as e:
+        if not args.forceOverwrite:
+            raise e
     print(outdir)
 
     if args.pdb is None:
@@ -99,10 +106,13 @@ def main(filename = "md_nvt_prod"):
     else:
         print("Skipping NVT equilibration")
 
+    if args.eqOnly:
+        return
+
     distanceFromPore = 1.0
     numbrella=60
 
-    if args.longSample.lower() in ["t", "tr", "tru", "true"]:
+    if args.longSample:
         print("Running 120ns of 0.02 nm windows")
         numbrella=120
 
@@ -129,9 +139,6 @@ def main(filename = "md_nvt_prod"):
 
     boxDims = sim.simmd.topology.getUnitCellDimensions()
     print("Box dimensions: ", boxDims)
-    if z0 < 0:
-        print("First umbrella is outside periodic box. Moving z coordinate to other side of image.")
-        z0 = boxDims[2] / nanometer + z0
     print("Center of umbrella potential (nm)", poreCenter)
 
     state = sim.simmd.context.getState(getEnergy=True,getForces=True,getVelocities=True,getPositions=True, enforcePeriodicBox=True)
@@ -159,7 +166,7 @@ def main(filename = "md_nvt_prod"):
 
     # loop over umbrella positions
     for iu in range(numbrella):
-        for i in range(10000):
+        for i in range(args.windowSize):
             # print position of Boron Atom; first print is starting position
             state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
             position = state.getPositions()
