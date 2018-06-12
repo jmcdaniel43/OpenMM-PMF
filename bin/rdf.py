@@ -7,6 +7,7 @@ from MDAnalysis.lib.mdamath import triclinic_vectors, box_volume
 import numpy as np
 import scipy as sp
 import argparse
+from rdf_smoother import smooth
 
 def rdf(topology,
         trajectory,
@@ -15,7 +16,8 @@ def rdf(topology,
         rdf_shell = 20,
         integration_shell = 6,
         bulk = False,
-        print_rdf = False):
+        print_rdf = False,
+        no_smooth = False):
 
     u=Universe(topology, trajectory)
     framestart = u.trajectory.n_frames - 1199
@@ -23,17 +25,11 @@ def rdf(topology,
     ion_group = u.select_atoms(ion_atomselection + " and resid 1")
     solvent_group = u.select_atoms(solvent_atomselection)
 
-    print(ion_atomselection)
-    print(solvent_atomselection)
-
-    print(solvent_group.n_atoms)
-    print(u.select_atoms("resname acn").n_atoms)
-    print(u.select_atoms("resname dce").n_atoms)
-    print(u.select_atoms("all").n_atoms)
+    # print(ion_atomselection)
+    # print(solvent_atomselection)
 
     if bulk:
-        for ele in atoms1:
-            group1 = group1 + u.select_atoms(ion_atomselection)
+        ion_group += u.select_atoms(ion_atomselection)
 
     rdfs = []
     for i in range(0,1200,20):
@@ -48,7 +44,7 @@ def rdf(topology,
     boxVolume = box_volume(dims)
     density = solvent_group.n_atoms / boxVolume
 
-    print(boxVolume, density)
+    # print(boxVolume, density)
 
     return_strings = []
 
@@ -61,29 +57,28 @@ def rdf(topology,
             coordinationNum = (4 * 3.14159 * density) * sp.integrate.trapz(data, rdf.bins[:len(data)])
             return_strings.append(coordinationNum)
     
-    return return_strings
+    if no_smooth:
+        return return_strings
+    else:
+        return smooth(map(float, return_strings))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    #parser.add_argument("datadir", help="path where the {1sshet,2sheet} directories are")
     parser.add_argument("datadir", default="pmf_output", help="directory containing the output data from the simulation")
     parser.add_argument("ion_atomselection", default="resname BF4 and name B", help="atomselection string for the type of ion diffusing (resid 1 will be added to whatever is input)")
     parser.add_argument("solvent_atomselection", default="resname acn and name CT", help="atomselection string for the type of solvent")
     parser.add_argument("--rdf_shell", default=20 ,type=int, help="size (in Angstroms) of solvation shell over which to calculate RDF")
     parser.add_argument("--is", "--integration_shell", default=6, type=int, help="size (in Angstroms) of solvation shell over which to integrate", dest="integration_shell")
     parser.add_argument("--bulk", action="store_true", help="whether to calculate the bulk rdf values")
-    parser.add_argument("--print_rdf", action="store_true", help="wheter to print rdf values; default print coordination number")
+    parser.add_argument("--print_rdf", action="store_true", help="print rdf values; default print coordination number")
+    parser.add_argument("--no_smooth", action="store_true", help="do not smooth coordination number output")
     args = parser.parse_args()
 
     # set the pdb topology and dcd trajectory
     topology = args.datadir + "/md_nvt_prod_start_drudes.pdb"
     trajectory = args.datadir + "/md_nvt_prod.dcd"
 
-    out = rdf(topology, trajectory, args.ion_atomselection, args.solvent_atomselection,
-            args.rdf_shell,
-            args.integration_shell,
-            args.bulk,
-            args.print_rdf)
+    out = rdf(topology, trajectory, **args)
 
     for i in out:
         print(i)

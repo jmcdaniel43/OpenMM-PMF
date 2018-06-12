@@ -35,35 +35,48 @@ def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
             line += 1
             break
 
+    try:
+        dz
+    except NameError:
+        dz = 0.4 # default value of 4A for older simulations
+
+    umbrellas = []
+
     # copy z location data into binned files
     for i in range(numbrella):
-        # z = start + dz * (i + 1) # some early simulations preincremented dz, so use this line
+        if False:
+            z = start + dz * (i + 1) # some early simulations preincremented dz, so use this line
+            print("starting at dz * (i + 1)", file=sys.stderr)
         z = start + dz * i # center of current umbrella potential
 
-        with open("umbrella_{:0.15f}".format(z), "w") as ofile:
-            for j in range(nstep):
+        umbrellas.append("umbrella_{:0.15f}".format(z))
+
+        j = 0
+        with open(umbrellas[-1], "w") as ofile:
+            while j < nstep:
                 zpos_match = zLocationRegex.match(lines[line])
                 if zpos_match is not None:
                     zpos = float(zpos_match.group(5)) * 10 # convert nm to angstrom
                     if abs(zpos - z) > boundaryTolerance:   # then we will assume the ion has crossed the boundary of the period image
                         zpos = maxZ + zpos                  # just add into +z dimension past the end of the box
                                                             # this prevents us from having to make wham deal with wrapping
-                else: # this probably happens the file is too short or if the parameters are invalid
-                    print(lines[line], file=sys.stderr, end="")
+                    ofile.write("{:d}   {:0.15f}\n".format(j, zpos))
+                    j += 1
 
-                ofile.write("{:d}   {:0.15f}\n".format(j, zpos))
+                # else: # this is most likely a marker for ion movement
+                    # j = j : don't count this line
+                    # print(lines[line], file=sys.stderr, end="")
+
                 line += 1
 
     return_string = ""
-    for file in glob.glob("umbrella_*"):
+    for file in umbrellas:
         x0 = file[9:]
         k = springConstant / 4.184 / 100 # convert springConstant from kJ/mol/nm^2 to kcal/mol/A^2
         return_string += "{:s}    {:s}      {:0.2f}\n".format(file, x0, k)
 
     return return_string
         
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         print("USAGE: <input file> <spring constant> <nstep> <numbrella>")
