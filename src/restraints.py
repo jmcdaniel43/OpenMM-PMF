@@ -6,7 +6,9 @@ import math
 import numpy as np
 from numpy import linalg, mod
 
-def findCenterOfPore(sim, poreSize):
+from simulation import ionAtomNameMap
+
+def findCenterOfPore(sim):
     """
     Find relevant C atoms on the edge of the pore.
 
@@ -86,27 +88,33 @@ def findCenterOfPore(sim, poreSize):
                 centerCoordList.append(nextAtomPosition)
                 continue
 
-            # make sure we are using the minimum image distance to the next atom
+            # make sure we are using the minimum image distance to the next atom from the first atom recorded
 
-            avgCenter = np.mean(centerCoordList, axis=0)
+            dr = centerCoordList[0] - nextAtomPosition
+            minimum_image_vector = minimum_image_distance(box, dr, box_inv)
+            shift = minimum_image_vector - dr
 
-            dr = nextAtomPosition - avgCenter
-            dr_box = box_inv.dot(dr).getA1() # getA1 flattens [[x,y,z]] (1x3 matrix) to [x,y,z] (vector)
-            shift_box = np.array(list(map(lambda x: math.floor(x + 0.5), dr_box)))
+            if shift.any(): # if the vectors are different: a shift has occured
+                print("Adjusting minimum distance for atom", index, "with shift",  shift)
 
-            shift = [0.0, 0.0, 0.0]
-            if shift_box.any(): # if anything is non-zero
-                shift = box.dot(shift_box).getA1()
-                print("Adjusting minimum distance for atom", index, "with shift_box", shift_box)
+            centerCoordList.append(centerCoordList[0] - minimum_image_vector)
 
-            centerCoordList.append(avgCenter + dr - shift)
-
-        coords[i] = np.mean(centerCoordList, axis=0)
+        coords[i] = np.mean(centerCoordList, axis=0) # produce a vector of the averages wrt each coordinate
 
     return coords[0], coords[1], coords[2]
 
 
-def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSize):
+def minimum_image_distance(box, dr, box_inv = None):
+    if box_inv is None:
+        box_inv = linalg.inv(box)
+
+    dr_box = box_inv.dot(dr).getA1() # getA1 flattens [[x,y,z]] (1x3 matrix) to [x,y,z] (vector)
+    shift_box = np.array(list(map(lambda x: math.floor(x + 0.5), dr_box)))
+
+    return dr + box.dot(shift_box).getA1()
+
+
+def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
     """
     Apply an umbrella potential window at the specified distanceFromPore
     from the edge of the pore for the Boron atom in the first BF4 residue.
@@ -132,8 +140,8 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSi
         Number of umbrella potentials to be used
     kxy: float
         Force constant for the potential in the x, y dimensions.
-    atomselection: int
-        Index of the ion that the potential should operate on.
+    ion_name: string
+        What residue pull through the pore
 
     Returns
     ______
@@ -144,15 +152,8 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSi
         Distance to move the umbrella after each iteration.
     """
 
-    boxVecs = sim.simmd.context.getState().getPeriodicBoxVectors(asNumpy=True)
-    boxCenter = np.array([0.0,0.0,0.0])
-    for i in boxVecs:
-        boxCenter += i / nanometer
-    boxCenter /= 2
-    print("Bringing ion to center of system:", boxCenter)
-
     print('Setting umbrella forces about equilibrated pore')
-    centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim, poreSize)
+    centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim)
     x0 = centerCoords[0]
     y0 = centerCoords[1]
     z0 = interiorCoords[2] - distanceFromPore
@@ -160,13 +161,51 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSi
     totalDistanceToTravel = distanceFromPore * 2 + abs(exteriorCoords[2] - interiorCoords[2])
     dz = totalDistanceToTravel / numbrella
 
+    # find an ion that is close to the pore, and is on the right side of the sheet
+    aname = ionAtomNameMap[ion_name]
+    ions_to_try = []
+    for res in sim.simmd.topology.residues():
+        if res.name == ion_name:
+            for atom in res._atoms:
+                if atom.name == aname:
+                    ions_to_try.append((atom.index, res.id))
+
+    boxVecs = sim.simmd.context.getState().getPeriodicBoxVectors(asNumpy=True)
+    boxCenter = np.array([0.0,0.0,0.0])
+    for i in boxVecs:
+        boxCenter += i / nanometer
+    boxCenter /= 2
+
+    index = -1
+    state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
+    positions = state.getPositions()
+    failure_iterations = 20
+    for i in range(failure_iterations): # just in case there is not an ion near the starting location
+                                        # we can iterate a few times to wait until ions have diffused
+                                        # seems unlikely for this to be necessary
+        for ion in ions_to_try:
+            z = positions[ion[0]][2] / nanometer
+            if z < interiorCoords[2] and z > boxCenter[2]:
+                index = ion[0]
+                resid = ion[1]
+                break
+
+        if index != -1:
+            break
+        else: # run the sim a little bit to move the ions around
+            sim.simmd.step(100)
+
+    print("Ion index:", index, "Resid:", resid)
+    if index == -1:
+        raise IndexError("ion index was not found in the system")
+
     # Apply potential
     # PMF apply umbrella potential to z direction
     kz=2000.0  # kJ/mol/nm^2
     ZForce = CustomExternalForce("0.5*kz*periodicdistance(x,y,z,x,y,z0)^2")
     sim.system.addForce(ZForce)
     ZForce.addParticle(index)
-    ZForce.addGlobalParameter('z0', boxCenter[2])
+    ZForce.addGlobalParameter('z0', z0)
     ZForce.addGlobalParameter('kz', kz)
 
     # PMF apply umbrella potential to x, y directions
@@ -177,15 +216,7 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, index, poreSi
     XYForce.addGlobalParameter('y0', y0)
     XYForce.addGlobalParameter('kxy', kxy)
 
-    state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
-    sim.simmd.context.reinitialize()
-    sim.simmd.context.setPositions(state.getPositions())
-    sim.simmd.step(100)
-
-
-    sim.simmd.context.setParameter('z0',z0)
-
-    return [x0, y0, z0], dz
+    return [x0, y0, z0], dz, index
 
 def restrainGrapheneSheets(sim, restrained_atoms, z0graph):
     state = sim.simmd.context.getState(getPositions=True)

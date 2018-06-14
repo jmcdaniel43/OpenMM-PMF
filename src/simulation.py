@@ -2,6 +2,18 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 
+solvents = ["acn", "dce"]
+anions = {
+    "BF4": "B",
+}
+cations = {
+    "TMA": "N",
+    "TMEA": "N"
+}
+ionAtomNameMap = {}
+ionAtomNameMap.update(anions)
+ionAtomNameMap.update(cations)
+
 class PMF_Simulation:
     def __init__(self, pdb_name, filename, outdir, bondDefinitionFiles, forceFieldFiles, gpuDeviceIndex = '0', trajFreq=50000):
         self.temperature = 300 * kelvin

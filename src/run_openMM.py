@@ -8,20 +8,8 @@ import sys
 import argparse
 import os
 
-from simulation import PMF_Simulation
+from simulation import PMF_Simulation, cations, anions, solvents
 from restraints import *
-
-solvents = ["acn", "dce"]
-anions = {
-    "BF4": "B",
-}
-cations = {
-    "TMA": "N",
-    "TMEA": "N"
-}
-ionAtomNameMap = {}
-ionAtomNameMap.update(anions)
-ionAtomNameMap.update(cations)
 
 def main(filename = "md_nvt_prod"):
     parser = argparse.ArgumentParser()
@@ -116,22 +104,7 @@ def main(filename = "md_nvt_prod"):
         print("Running 120ns of 0.02 nm windows")
         numbrella=120
 
-    # Locate ion
-    aname = ionAtomNameMap[args.ion]
-    index=-1
-    for res in sim.simmd.topology.residues():
-        if res.name == args.ion:
-            for atom in res._atoms:
-                if atom.name == aname:
-                    print(str(atom))
-                    index = atom.index
-                    break
-            break
-    print("Ion index:", index)
-    if index == -1:
-        raise IndexError("ion index was not found in the system")
-
-    poreCenter, dz = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, index, args.pore)
+    poreCenter, dz, index = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, args.ion)
     print("dz", dz)
     z0 = poreCenter[2]
 
@@ -139,9 +112,13 @@ def main(filename = "md_nvt_prod"):
 
     boxDims = sim.simmd.topology.getUnitCellDimensions()
     print("Box dimensions: ", boxDims)
-    print("Center of umbrella potential (nm)", poreCenter)
+    print("Center of umbrella potential (x,y,z (nm)):", poreCenter[0], poreCenter[1], poreCenter[2])
 
-    state = sim.simmd.context.getState(getEnergy=True,getForces=True,getVelocities=True,getPositions=True, enforcePeriodicBox=True)
+    # equilibrate 100 picoseconds to ensure ion is in the correct umbrella
+    print("Equilibrating to first umbrella window")
+    sim.simmd.step(100000)
+
+    state = sim.simmd.context.getState(getEnergy=True, getForces=True, getVelocities=True, getPositions=True, enforcePeriodicBox=True)
     sim.simmd.context.reinitialize()
     sim.simmd.context.setPositions(state.getPositions())
 
