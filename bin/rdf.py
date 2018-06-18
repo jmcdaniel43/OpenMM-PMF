@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 from __future__ import division, print_function # python2 defaults to interger division. py3 defaults to floating division
 from MDAnalysis import *

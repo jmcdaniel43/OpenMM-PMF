@@ -37,7 +37,7 @@ def stdev(expected_mean, whaminput):
     return sqrt(sum([(x - expected_mean)**2 for x in zs]) / (n - 1))
 
 def make_pmf(system, force=False):
-    os.chdir(system)
+    os.chdir(startingDir)
 
     ####
     #
@@ -60,6 +60,7 @@ def make_pmf(system, force=False):
             print("pmf exists:", system, file=sys.stderr)
             if not force:
                 return
+            print("overwriting data")
 
     os.chdir("pmf")
 
@@ -69,7 +70,7 @@ def make_pmf(system, force=False):
     #
     ####
 
-    log_name = startingDir + "/output_logs/" + simpath2outputname([system])[0] + ".log"
+    log_name = startingDir + "/output_logs/" + simpath2outputname(system) + ".log"
 
     try:
         whaminput = convert_umbrella_output(open(log_name), 2000, 10000, 60)
@@ -110,6 +111,8 @@ def make_pmf(system, force=False):
 
     with open("whamout", "w") as pipeOut:
         call(['wham', startWindow, endWindow, "60", "0.01", "300.0", "0", whaminputFile, "pmf", "1000", "143289"], stdout=pipeOut)
+
+    print("pmf calculated:", system)
 
     # make sure we end up in the directory where we started
     os.chdir(startingDir)

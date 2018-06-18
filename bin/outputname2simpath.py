@@ -5,20 +5,13 @@ import fileinput
 
 from common import DiffusionSystem
 
-def outputname2simpath(files):
-    return_strings = []
-    
-    for line in fileinput.input():
-        try:
-            sys = DiffusionSystem(line)
-        except ValueError as e:
-            print(e)
-            continue
-        
-        return_strings.append(sys.sim_path())
-
-    return return_strings
+def outputname2simpath(line):
+    sys = DiffusionSystem(line)
+    return sys.sim_path()
 
 if __name__ == '__main__':
-    for i in outputname2simpath(fileinput.input()):
-        print(i)
+    for i in fileinput.input():
+        try:
+            print(outputname2simpath(i))
+        except ValueError as e:
+            print(e)

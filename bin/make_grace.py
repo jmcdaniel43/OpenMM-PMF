@@ -2,21 +2,20 @@
 
 import sys
 import re
-import fileinput
 from simpath2outputname import simpath2outputname
 
-def make_grace(kind, filename):
+def make_grace(kind, filename, tag = ""):
     with open(filename) as f:
         if kind == "pmf":
-            grace = pmf(f)
+            grace = pmf(f, tag)
         elif kind == "rdf":
-            grace = rdf(f)
+            grace = rdf(f, tag)
         else:
             raise ValueError("kind must be 'pmf' or 'rdf'")
 
-        return grace.format(simpath2outputname([filename])[0])
+        return grace.format(simpath2outputname(filename))
 
-def pmf(input_data):
+def pmf(input_data, tag):
     energies = []
     regex = re.compile("(\d+\.\d+)\s*(\d+\.\d+).*")
 
@@ -29,9 +28,12 @@ def pmf(input_data):
     for i, e in enumerate(energies):
         energiesStr += "%s %s\n" % (str(i), e[1])
 
-    return graceScript.format(59, 20, "pmf", "{:s}") + energiesStr + "&"
+    chart_type = "pmf"
+    if tag != "":
+        chart_type += "_" + tag
+    return graceScript.format(59, 20, chart_type, "{:s}") + energiesStr + "&"
 
-def rdf(input_data):
+def rdf(input_data, tag):
     energies = []
     regex = re.compile("(\d+\.\d+).*")
 
@@ -44,6 +46,9 @@ def rdf(input_data):
     for i, e in enumerate(energies):
         energiesStr += "%s %s\n" % (str(i), e)
 
+    chart_type = "rdf"
+    if tag != "":
+        chart_type += "_" + tag
     return graceScript.format(59, 10, "rdf", "{:s}") + energiesStr + "&"
 
 graceScript = """
@@ -348,6 +353,10 @@ graceScript = """
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("USAGE: make_grace.py <pmf|rdf> <input file>")
+        print("USAGE: make_grace.py <pmf|rdf> <input file> [tag]")
     else:
-        print(make_grace(sys.argv[1], sys.argv[2]))
+        tag = ""
+        if len(sys.argv) > 3:
+            tag = sys.argv[3]
+
+        print(make_grace(sys.argv[1], sys.argv[2]), tag)
