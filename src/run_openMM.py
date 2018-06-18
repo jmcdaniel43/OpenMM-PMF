@@ -31,6 +31,7 @@ def main(filename = "md_nvt_prod"):
     parser.add_argument("-f", "--forceOverwrite", action="store_true", help="force overwrite of existing data")
     parser.add_argument("--windowSize", default=10000, type=int, help="length of time to spend in each potential window (units of 0.1 ps)")
     parser.add_argument("--eqOnly", action="store_true", help="use if you want to end the simulation after equilibration")
+    parser.add_argument("--startingDistance", type=float, default=0.5, help="distance from the edge of the pore to start the umbrella sampling")
 
     args = parser.parse_args()
     print(args)
@@ -47,10 +48,12 @@ def main(filename = "md_nvt_prod"):
             raise e
     print(outdir)
 
-    if args.pdb is None:
-        pdb = "pdb/{:s}/{:s}/SC_start_{:d}_{:d}.pdb".format(args.solvent, args.system, args.sheets, args.pore)
-    else:
-        pdb = args.pdb
+    pdb = "pdb/{:s}/{:s}/SC_start_{:d}_{:d}.pdb".format(args.solvent, args.system, args.sheets, args.pore)
+    if args.pdb is not None:
+        if not os.path.exists(args.pdb):
+            print("pdb files does not exist ({:s})".format(args.pdb))
+        else:
+            pdb = args.pdb
     print("Using pdb: ", pdb)
 
     ffdir = args.ffdir + "/"
@@ -97,7 +100,7 @@ def main(filename = "md_nvt_prod"):
     if args.eqOnly:
         return
 
-    distanceFromPore = 1.0
+    distanceFromPore = args.startingDistance
     numbrella=60
 
     if args.longSample:
