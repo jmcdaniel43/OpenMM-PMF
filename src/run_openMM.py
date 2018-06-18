@@ -11,6 +11,9 @@ import os
 from simulation import PMF_Simulation, cations, anions, solvents
 from restraints import *
 
+default_eqNPT = 5000
+default_eqNVT = 5000
+
 def main(filename = "md_nvt_prod"):
     parser = argparse.ArgumentParser()
     parser.add_argument("system", help="system of anions and cations to use. Syntax is <anion>_,cation1>[_<cation2>...]")
@@ -23,8 +26,8 @@ def main(filename = "md_nvt_prod"):
     parser.add_argument("--ffdir", default="ffdir", help="directory containing force field files")
     parser.add_argument("--kxy", type=float, default=5, help="x-y dimension spring constant for ion constraint")
     parser.add_argument("--prefix", default="md_nvt_prod", help="prefix for output files (*.dcd, *.pdb)")
-    parser.add_argument("--eqNPT", default=5000, type=int, help="how long to equilibrate NPT")
-    parser.add_argument("--eqNVT", default=5000, type=int, help="how long to equilibrate NVT")
+    parser.add_argument("--eqNPT", default=default_eqNPT, type=int, help="how long to equilibrate NPT")
+    parser.add_argument("--eqNVT", default=default_eqNVT, type=int, help="how long to equilibrate NVT")
     parser.add_argument("--longSample", action="store_true", help="whether to sample 120ns of 0.02 nm windows")
     parser.add_argument("--gpuDevice", default='0', type=str, help="gpu device index")
     parser.add_argument("--trajFreq", default=50000, type=int, help="how often trajectory frames are printed (fs)")
@@ -52,6 +55,10 @@ def main(filename = "md_nvt_prod"):
     if args.pdb is not None:
         if not os.path.exists(args.pdb):
             print("pdb files does not exist ({:s})".format(args.pdb))
+            print(dir(args.eqNVT))
+            print("assuming equilibration should be reset to default: eqNPT={:d} eqNVT={:d}".format(default_eqNPT, default_eqNVT))
+            args.eqNPT = default_eqNPT
+            args.eqNVT = default_eqNVT
         else:
             pdb = args.pdb
     print("Using pdb: ", pdb)
