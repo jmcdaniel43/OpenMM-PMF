@@ -2,7 +2,7 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 
-solvents = ["acn", "dce"]
+solvents = ["acn", "dce", "h2o"]
 anions = {
     "BF4": "B",
 }
