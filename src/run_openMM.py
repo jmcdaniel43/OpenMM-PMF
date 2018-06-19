@@ -34,7 +34,7 @@ def main(filename = "md_nvt_prod"):
     parser.add_argument("-f", "--forceOverwrite", action="store_true", help="force overwrite of existing data")
     parser.add_argument("--windowSize", default=10000, type=int, help="length of time to spend in each potential window (units of 0.1 ps)")
     parser.add_argument("--eqOnly", action="store_true", help="use if you want to end the simulation after equilibration")
-    parser.add_argument("--startingDistance", type=float, default=0.5, help="distance from the edge of the pore to start the umbrella sampling")
+    parser.add_argument("--startingDistance", type=float, default=1.0, help="distance from the edge of the pore to start the umbrella sampling")
 
     args = parser.parse_args()
     print(args)
