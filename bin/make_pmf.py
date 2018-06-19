@@ -19,8 +19,8 @@ from simpath2outputname import simpath2outputname
 from math import sqrt
 
 whaminputFile = "whaminput"
-whaminputRegex = re.compile("umbrella_([0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)")
-z_regex = re.compile("\d+\s+(\d+\.\d+)")
+whaminputRegex = re.compile("umbrella_([0-9]+\.[0-9]+)\s+(-?[0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)")
+z_regex = re.compile("\d+\s+(-?\d+\.\d+)")
 
 startingDir = os.getcwd()
 
@@ -73,7 +73,7 @@ def make_pmf(system, force=False):
     log_name = startingDir + "/output_logs/" + simpath2outputname(system) + ".log"
 
     try:
-        whaminput = convert_umbrella_output(open(log_name), 2000, 10000, 60)
+        whaminput, pore_center = convert_umbrella_output(open(log_name), 2000, 10000, 60)
     except:
         print("error converting log:", log_name)
         traceback.print_exc()
@@ -84,7 +84,7 @@ def make_pmf(system, force=False):
         filename = i.split(" ")[0]
         with open(filename) as f:
             expected_mean = float(filename.split("_")[1])
-            cur = stdev(expected_mean, f.read())
+            cur = stdev(expected_mean - pore_center, f.read())
             if cur > 1: # if the stdev is greater than 1 Angstrom away from the center of the potential
                         # then this window probably has something weird going on
                 print("{:s} stdev is too high {:f} window {:s} (#{:d})".format(system, cur, filename, idx))

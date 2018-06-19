@@ -7,7 +7,11 @@ from MDAnalysis.lib.mdamath import triclinic_vectors, box_volume
 import numpy as np
 import scipy as sp
 import argparse
+import re
+
 from rdf_smoother import smooth
+
+residRegex = re.compile("Ion index: \d+ Resid: (\d+)")
 
 def rdf(topology,
         trajectory,
@@ -17,12 +21,30 @@ def rdf(topology,
         integration_shell = 6,
         bulk = False,
         print_rdf = False,
-        no_smooth = False):
+        no_smooth = False,
+        resid = 1):
 
     u=Universe(topology, trajectory)
     framestart = u.trajectory.n_frames - 1199
 
-    ion_group = u.select_atoms(ion_atomselection + " and resid 1")
+    # for the newer simulations, the resid is no longer always 1
+    # so we can check for the resid in those new sims' logs
+    # if the regex matches something, it's a new sim: record the resid
+    # otherwise, keep using 1 as the resid
+    with open("output.log") as log:
+        i = 0
+        for line in log.readlines():
+            if i > 200:
+                break # there probably is no match for the regex
+
+            m = residRegex.match(line)
+            if m is not None:
+                resid = int(m.group(1))
+                break
+
+            i += 1
+
+    ion_group = u.select_atoms(ion_atomselection + " and resid " + str(resid))
     solvent_group = u.select_atoms(solvent_atomselection)
 
     # print(ion_atomselection)

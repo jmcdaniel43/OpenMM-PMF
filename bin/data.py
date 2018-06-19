@@ -3,22 +3,24 @@ import sys
 from pathlib import Path
 from math import sqrt
 from multiprocessing import Pool
+import argparse
 
 from common import DiffusionSystem
 from make_pmf import make_pmf
+from make_grace import graceScript
 # from make_rdf import make_rdf
 
 """
 Retrieves data from PMF and RDF files for statistical calculations
 """
 
-pmf_regex = re.compile("(\d+\.\d+)\s+(\d+\.\d+)\s+.*")
+pmf_regex = re.compile("(-?\d+\.\d+)\s+(\d+\.\d+)\s+.*")
 
 def get_pmf(datapath):
     pmf_path = Path(datapath) / "pmf" / "pmf"
     if not pmf_path.exists():
         print("no such pmf file", datapath, file=sys.stderr)
-        return 
+        return
         # print("attempting to calculate", file=sys.stderr)
         # if make_pmf(datapath) is not None:
         #     print("pmf calculation failed", file=sys.stderr)
@@ -65,7 +67,7 @@ def find_sys(inp, systems):
         # probably an invalid regex
         print("regex excceptiong", file=sys.stderr)
 
-    return [x for x in systems if system_filter.match(x.output_name()) is not None] 
+    return [x for x in systems if system_filter.match(x.output_name()) is not None]
 
 class PMF_Data:
     def __init__(self, data):
@@ -179,34 +181,118 @@ class DiffusionData:
         return n, (mean_pmf, mean_rdf, mean_ion), (t_pmf, t_rdf, t_ion)
 
 
-    def run(self, inp):
-        args = inp.split(' ')
-        attr = None
-        if len(args) > 1:
-            attr = args[1]
-
-        systems_with_full_data = [x for x in self.pmf_files.keys() if x in self.rdf_files.keys() and x in self.ion_files.keys()]
-
-        for i in (list(self.pmf_files.keys()) + list(self.rdf_files.keys())):
-            if i not in systems_with_full_data:
-                print("not included:", i)
-
-        queried_systems = find_sys(inp, systems_with_full_data)
+    def run(self, inp, grace = False):
+        all_data = set(self.pmf_files.keys()) | set(self.rdf_files.keys()) | set(self.ion_files.keys()) | set(self.bulk_solv_files.keys()) | set(self.bulk_ion_files.keys())
+        queried_systems = find_sys(inp, all_data)
         for i in sorted(queried_systems):
-            if attr is not None:
-                # print("{:s} {:s} {:f} {:f} {:f}".format(i, attr)
+            continue
+            try:
+                print("{:s}: pmf {:f} {:f} {:f} solv {:f} {:f} {:f} ion {:f} {:f} {:f} bulk_solv {:f} bulk_ion {:f}".format(i,
+                    self.pmf_files[i].start, self.pmf_files[i].max, self.pmf_files[i].end,
+                    self.rdf_files[i].start, self.rdf_files[i].min, self.rdf_files[i].end,
+                    self.ion_files[i].start, self.ion_files[i].min, self.ion_files[i].end,
+                    self.bulk_solv_files[i].average, self.bulk_ion_files[i].average
+                    ))
+            except:
                 pass
 
-            print("{:s}: pmf {:f} {:f} {:f} solv {:f} {:f} {:f} ion {:f} {:f} {:f} bulk_solv {:f} bulk_ion {:f}".format(i,
-                self.pmf_files[i].start, self.pmf_files[i].max, self.pmf_files[i].end,
-                self.rdf_files[i].start, self.rdf_files[i].min, self.rdf_files[i].end,
-                self.ion_files[i].start, self.ion_files[i].min, self.ion_files[i].end,
-                self.bulk_solv_files[i].average, self.bulk_ion_files[i].average
-                ))
+        if grace:
+            for system in all_data:
+                try:
+                    pmf = self.pmf_files[system].data
+                    coordinates = list(pmf.keys())
+                    energies = list(pmf.values())
+
+                    energiesStr = ""
+                    for z, e in pmf.items():
+                        energiesStr += "{:f} {:f}\n".format(z, e)
+
+                    start_x = floor(coordinates[0])
+                    end_x = ceil(coordinates[-1])
+                    end_y = 20
+                    grace = graceScript.format(start_x, end_x, end_y, "pmf", "{:s}") + energiesStr + "&"
+
+                    with open("grace/pmf_" + system.output_name() + ".xgr", "w") as f:
+                        f.write(grace.format(system.output_name()))
+                except:
+                    print("pmf grace data failed")
+                    print(sys.exc_info())
+                    continue
+
+                try:
+                    solv = self.rdf_files[system].data
+                    energiesStr = ""
+                    for z, e in zip(coordinates, solv):
+                        energiesStr += "{:f} {:f}\n".format(z, e)
+
+                    grace = graceScript.format(start_x, end_x, end_y, "solv", "{:s}") + energiesStr + "&"
+
+                    with open("grace/solv_" + system.output_name() + ".xgr", "w") as f:
+                        f.write(grace.format(system.output_name()))
+                except:
+                    print("rdf grace data failed")
+                    print(sys.exc_info())
+
+                try:
+                    ion = self.ion_files[system].data
+                    energiesStr = ""
+                    for z, e in zip(coordinates, ion):
+                        energiesStr += "{:f} {:f}\n".format(z, e)
+
+                    grace = graceScript.format(start_x, end_x, end_y, "ion", "{:s}") + energiesStr + "&"
+
+                    with open("grace/ion_" + system.output_name() + ".xgr", "w") as f:
+                        f.write(grace.format(system.output_name()))
+                except:
+                    print("ion grace data failed")
+                    print(sys.exc_info())
+
+                try:
+                    bulk_solv = self.bulk_solv_files[system].data
+                    energiesStr = ""
+                    for z, e in zip(coordinates, bulk_solv):
+                        energiesStr += "{:f} {:f}\n".format(z, e)
+
+                    grace = graceScript.format(start_x, end_x, end_y, "bulk_solv", "{:s}") + energiesStr + "&"
+
+                    with open("grace/bulk_solv_" + system.output_name() + ".xgr", "w") as f:
+                        f.write(grace.format(system.output_name()))
+                except:
+                    print("bulk_solv grace data failed")
+                    print(sys.exc_info())
+
+                try:
+                    bulk_ion = self.bulk_ion_files[system].data
+                    energiesStr = ""
+                    for z, e in zip(coordinates, bulk_ion):
+                        energiesStr += "{:f} {:f}\n".format(z, e)
+
+                    grace = graceScript.format(start_x, end_x, end_y, "bulk_ion", "{:s}") + energiesStr + "&"
+
+                    with open("grace/bulk_ion_" + system.output_name() + ".xgr", "w") as f:
+                        f.write(grace.format(system.output_name()))
+                except:
+                    print("bulk_ion grace data failed")
+                    print(sys.exc_info())
+
+
+        ######
+
+        ######
+
+        ######
+        #
+        # run stats
+        #
+        ######
+        systems_with_full_data = [x for x in queried_systems if x in self.pmf_files.keys() and x in self.rdf_files.keys() and x in self.ion_files.keys()]
+        for i in (list(self.pmf_files.keys()) + list(self.rdf_files.keys())):
+            if i not in systems_with_full_data:
+                print("no full data:", i)
 
         acn = []
         dce = []
-        for i in queried_systems:
+        for i in systems_with_full_data:
             if i.solvent == "acn":
                 analogue = None
                 for j in queried_systems:
@@ -227,27 +313,19 @@ class DiffusionData:
         else:
             print("no stats")
 
-    #     first = DiffusionSystem(queried_systems[0])
-    #     same_system = True
-    #     for i in queried_systems:
-    #         j = DiffusionSystem(i)
-    #         if j.tmaPresent != first.tmaPresent:
-    #             same_system = False
-    # 
-    #     if same_system:
-    #         if not first.tmaPresent: # add newline spacers to fit the excel sheet
-    #             l = ["" for x in range(2 * len(return_systems))]
-    #             l[::2] = return_systems
-    #             return_systems = l
-
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--filter", default="", help="filter systems")
+    parser.add_argument("--write_grace", action="store_true", help="write grace data into a folder named grace")
+    args = parser.parse_args()
+
     dd = DiffusionData(sys.stdin.readlines())
 
     #
     # if being used as a single command
     #
     if len(sys.argv) > 1:
-        dd.run(sys.argv[1])
+        dd.run(args.filter, args.write_grace)
         sys.exit(0)
 
     #

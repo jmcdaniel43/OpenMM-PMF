@@ -47,6 +47,8 @@ def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
     except NameError:
         dz = 0.4 # default value of 0.4A for older simulations
 
+    center_of_pore = start + 10 # all the simulations start 1 nm from the center of the pore
+
     umbrellas = []
 
     # copy z location data into binned files
@@ -55,8 +57,7 @@ def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
         #     z = start + dz * (i + 1) # some early simulations preincremented dz, so use this line
         #     print("starting at dz * (i + 1)", file=sys.stderr)
         z = start + dz * i # center of current umbrella potential
-
-        umbrellas.append("umbrella_{:0.15f}".format(z))
+        umbrellas.append("umbrella_{:0.9f}".format(z))
 
         j = 0
         with open(umbrellas[-1], "w") as ofile:
@@ -67,7 +68,7 @@ def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
                     if abs(zpos - z) > boundaryTolerance:   # then we will assume the ion has crossed the boundary of the period image
                         zpos = maxZ + zpos                  # just add into +z dimension past the end of the box
                                                             # this prevents us from having to make wham deal with wrapping
-                    ofile.write("{:d}   {:0.15f}\n".format(j, zpos))
+                    ofile.write("{:d}   {:0.15f}\n".format(j, zpos - center_of_pore))
                     j += 1
 
                 # else: # this is most likely a marker for ion movement
@@ -78,11 +79,14 @@ def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
 
     return_string = ""
     for file in umbrellas:
-        x0 = file[9:]
+        z0 = float(file[9:]) # center of potential for each window
         k = springConstant / 4.184 / 100 # convert springConstant from kJ/mol/nm^2 to kcal/mol/A^2
-        return_string += "{:s}    {:s}      {:0.2f}\n".format(file, x0, k)
+        leadingSpace = " "
+        if z0 > 0: # we need to offset the negative sign to keep the columns aligned
+            leadingSpace += " "
+        return_string += "{:s}   {:s}{:f}      {:0.2f}\n".format(file, leadingSpace, z0 - center_of_pore, k)
 
-    return return_string
+    return return_string, center_of_pore
         
 if __name__ == "__main__":
     if len(sys.argv) < 5:
@@ -94,4 +98,4 @@ if __name__ == "__main__":
     numbrella      = int(sys.argv[4])
 
     with open(sys.argv[1]) as f:
-        print(convert_umbrella_output(f, springConstant, nstep, numbrella))
+        print(convert_umbrella_output(f, springConstant, nstep, numbrella)[0])

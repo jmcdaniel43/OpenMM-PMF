@@ -3,53 +3,55 @@
 import sys
 import re
 from simpath2outputname import simpath2outputname
+import math
 
-def make_grace(kind, filename, tag = ""):
-    with open(filename) as f:
-        if kind == "pmf":
-            grace = pmf(f, tag)
-        elif kind == "rdf":
-            grace = rdf(f, tag)
-        else:
-            raise ValueError("kind must be 'pmf' or 'rdf'")
+def make_grace(kind, system, input_data, tag = "", coordinates = []):
+    if kind == "pmf":
+        grace = pmf(input_data, tag)
+    elif kind == "rdf":
+        grace = rdf(input_data, tag, coordinates)
+    else:
+        raise ValueError("kind must be 'pmf' or 'rdf'")
 
-        return grace.format(simpath2outputname(filename))
+    return grace.format(system.output_name())
 
 def pmf(input_data, tag):
     energies = []
-    regex = re.compile("(\d+\.\d+)\s*(\d+\.\d+).*")
+    regex = re.compile("(-?\d+\.\d+)\s*(\d+\.\d+).*")
 
-    for line in input_data:
+    for line in input_data.splitlines():
         match = regex.match(line)
         if match is not None:
             energies.append((match.group(1), match.group(2)))
 
     energiesStr = ""
     for i, e in enumerate(energies):
-        energiesStr += "%s %s\n" % (str(i), e[1])
+        energiesStr += "%s %s\n" % (e)
 
     chart_type = "pmf"
     if tag != "":
         chart_type += "_" + tag
-    return graceScript.format(59, 20, chart_type, "{:s}") + energiesStr + "&"
+    return graceScript.format(math.floor(float(energies[0][0])), math.ceil(float(energies[-1][0])), 20, chart_type, "{:s}") + energiesStr + "&"
 
-def rdf(input_data, tag):
+def rdf(input_data, tag, coordinates):
     energies = []
     regex = re.compile("(\d+\.\d+).*")
 
-    for line in input_data:
+    for line in input_data.splitlines():
         match = regex.match(line)
         if match is not None:
             energies.append(match.group(1))
 
     energiesStr = ""
     for i, e in enumerate(energies):
+        if coordinates != []:
+            i = coordinates[i]
         energiesStr += "%s %s\n" % (str(i), e)
 
     chart_type = "rdf"
     if tag != "":
         chart_type += "_" + tag
-    return graceScript.format(59, 10, "rdf", "{:s}") + energiesStr + "&"
+    return graceScript.format(0, 59, 10, "rdf", "{:s}") + energiesStr + "&"
 
 graceScript = """
 # Grace project file
@@ -155,7 +157,7 @@ graceScript = """
 @g0 fixedpoint format general general
 @g0 fixedpoint prec 6, 6
 @with g0
-@    world 0, 0, {0:d}, {1:d}
+@    world {0:d}, 0, {1:d}, {2:d}
 @    stack world 0, 0, 0, 0
 @    znorm 1
 @    view 0.150000, 0.150000, 1.150000, 0.850000
@@ -345,7 +347,7 @@ graceScript = """
 @    s0 errorbar riser linestyle 1
 @    s0 errorbar riser clip off
 @    s0 errorbar riser clip length 0.100000
-@    s0 comment "{2:s}_{3:s}"
+@    s0 comment "{3:s}_{4:s}"
 @    s0 legend  ""
 @target G0.S0
 @type xy
@@ -359,4 +361,5 @@ if __name__ == "__main__":
         if len(sys.argv) > 3:
             tag = sys.argv[3]
 
-        print(make_grace(sys.argv[1], sys.argv[2]), tag)
+        with open(sys.argv[2]) as f:
+            print(make_grace(sys.argv[1], DiffusionSystem(sys.argv[2]), f.read(), tag))
