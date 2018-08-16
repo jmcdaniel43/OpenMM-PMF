@@ -1,16 +1,20 @@
 #!/bin/bash
 
-for solv in {"acn","dce"}
+for solv in {"acn","dce","h2o"}
 do
-    for sys in {"bf4_tmea","bf4_tma_tmea"}
+    for sys in {"bf4_bmim","bf4_tma_tmea"}
     do
         for ion in {"BF4","TMA","TMEA"}
         do
-            for sheets in {1..2}
+            for sheets in {1..1}
             do
                 for pore in {7,10,14}
                 do
-                    if [ $sys = "bf4_tmea" ] && [ $ion = "TMA" ]; then
+                    if  [ $ion = "TMEA" ] || [ $ion = "TMA" ] && [ $sys = "bf4_bmim" ]; then
+                        continue
+                    fi
+
+                    if  [ $ion = "TMEA" ] || [ $ion = "TMA" ] && [ $pore = 7 ]; then
                         continue
                     fi
 

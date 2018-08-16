@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from __future__ import print_function
 import fileinput
@@ -18,12 +18,19 @@ from common import DiffusionSystem
 
 startingDir = os.getcwd()
 
-def make_rdf(system, rdfOutputFile, ion = False, bulk = False):
+def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False, print_rdf = False):
     os.chdir(startingDir)
 
     if not path.exists(system):
         print("no system exists:", system)
         return False
+
+    if path.exists(system + "/" + rdfOutputFile + ".dat"):
+        print("coord exists:", system, rdfOutputFile)
+        if force:
+            print("overwriting")
+        else:
+            return False
 
     os.chdir(system)
 
@@ -41,7 +48,7 @@ def make_rdf(system, rdfOutputFile, ion = False, bulk = False):
 
         if ion:
             solvent_resname = {
-                "BF4": ("TME", "N"),
+                "BF4": ("TME or resname TMA", "N"),
                 "TMA": ("BF4", "B"),
                 "TMEA": ("BF4", "B")
             }[diff_sys.diffusingIon]
@@ -51,53 +58,40 @@ def make_rdf(system, rdfOutputFile, ion = False, bulk = False):
         else:
             solvent_resname = {
                 "dce": ("dch", "CT"),
-                "acn": ("acn", "CT")
+                "acn": ("acn", "CT"),
+                "h2o": ("HOH", "O"),
             }[diff_sys.solvent]
 
 
-        ion_atomselection = "(resname %s and name %s)" % (diff_sys.diffusingIon[:3], ion_atom)
-        solvent_atomselection = "(resname %s and name %s)" % (solvent_resname[0][:3], solvent_resname[1])
+        ion_atomselection = "((resname %s) and name %s)" % (diff_sys.diffusingIon[:3], ion_atom)
+        solvent_atomselection = "((resname %s) and name %s)" % (solvent_resname[0][:3], solvent_resname[1])
 
-        out = rdf(topology, trajectory, ion_atomselection, solvent_atomselection, bulk = bulk)
+        coord = rdf(topology, trajectory, ion_atomselection, solvent_atomselection, bulk = bulk)
 
     except:
         print("error calculating rdf:", system)
         traceback.print_exc()
         return False
 
-    with open(rdfOutputFile, "w") as f:
-        for i in smooth(out):
+    with open(rdfOutputFile + ".dat", "w") as f:
+        for i in smooth(coord):
             f.write(str(i) + "\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ion", action="store_true", help="calculate ion coordination instead of solvation")
-    parser.add_argument("--bulk", action="store_true", help="calculate bulk solvation coordination numbers")
+    parser.add_argument("--force", action="store_true", help="force overwrite of exisiting files")
     args = parser.parse_args()
+    print(args)
 
     systems = []
     for line in sys.stdin.readlines():
         systems.append(line.strip())
 
-    def make_ion_coordination(system):
-        make_rdf(system, "ion_coordination.dat", ion = True)
-
-    def make_bulk_solv(system):
-        make_rdf(system, "bulk_solvation.dat", bulk = True)
-    def make_bulk_ion(system):
-        make_rdf(system, "bulk_ion.dat", ion = True, bulk = True)
-
-    def __make_rdf(system):
-        make_rdf(system, "rdf.dat")
+    def __rdf(system):
+        make_rdf(system, "solv", force=args.force)
+        make_rdf(system, "ion_coordination", force=args.force, ion=True)
+        make_rdf(system, "bulk_solvation", force=args.force, bulk=True)
+        make_rdf(system, "bulk_ion", force=args.force, bulk=True, ion=True)
 
     p = Pool(12)
-    if args.ion:
-        if args.bulk:
-            p.map(make_bulk_ion, systems)
-        else:
-            p.map(make_ion_coordination, systems)
-    else:
-        if args.bulk:
-            p.map(make_bulk_solv, systems)
-        else:
-            p.map(__make_rdf, systems)
+    p.map(__rdf, systems)

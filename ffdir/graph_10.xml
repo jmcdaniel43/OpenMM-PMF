@@ -38,7 +38,7 @@
   <Type name="graphite-C35" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C36" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C37" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C38" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C38" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C39" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C40" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C41" class="Cgt" element="C" mass="12.011"/>
@@ -48,7 +48,7 @@
   <Type name="graphite-C45" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C46" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C47" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C48" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C48" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C49" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C50" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C51" class="Cgt" element="C" mass="12.011"/>
@@ -58,7 +58,7 @@
   <Type name="graphite-C55" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C56" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C57" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C58" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C58" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C59" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C60" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C61" class="Cgt" element="C" mass="12.011"/>
@@ -139,7 +139,7 @@
   <Type name="graphite-C136" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C137" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C138" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C139" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C139" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C140" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C141" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C142" class="Cgt" element="C" mass="12.011"/>
@@ -149,7 +149,7 @@
   <Type name="graphite-C146" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C147" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C148" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C149" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C149" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C150" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C151" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C152" class="Cgt" element="C" mass="12.011"/>
@@ -159,7 +159,7 @@
   <Type name="graphite-C156" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C157" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C158" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C159" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C159" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C160" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C161" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C162" class="Cgt" element="C" mass="12.011"/>
@@ -169,7 +169,7 @@
   <Type name="graphite-C166" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C167" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C168" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C169" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C169" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C170" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C171" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C172" class="Cgt" element="C" mass="12.011"/>
@@ -230,8 +230,8 @@
   <Type name="graphite-C227" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C228" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C229" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C230" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C231" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C230" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C231" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C232" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C233" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C234" class="Cgt" element="C" mass="12.011"/>
@@ -239,29 +239,29 @@
   <Type name="graphite-C236" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C237" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C238" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C239" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C242" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C239" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C242" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C243" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C244" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C245" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C246" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C247" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C248" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C253" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C253" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C254" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C255" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C256" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C257" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C258" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C263" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C263" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C264" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C265" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C266" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C267" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C268" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C269" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C270" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C273" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C269" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C270" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C273" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C274" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C275" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C276" class="Cgt" element="C" mass="12.011"/>
@@ -269,9 +269,9 @@
   <Type name="graphite-C278" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C279" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C280" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C281" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C282" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C283" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C281" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C282" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C283" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C284" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C285" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C286" class="Cgt" element="C" mass="12.011"/>
@@ -318,8 +318,8 @@
   <Type name="graphite-C327" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C328" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C329" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C330" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C331" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C330" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C331" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C332" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C333" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C334" class="Cgt" element="C" mass="12.011"/>
@@ -328,7 +328,7 @@
   <Type name="graphite-C337" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C338" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C339" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C342" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C342" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C343" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C344" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C345" class="Cgt" element="C" mass="12.011"/>
@@ -336,31 +336,31 @@
   <Type name="graphite-C347" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C348" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C349" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C353" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C353" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C354" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C355" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C356" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C357" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C358" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C359" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C364" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C364" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C365" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C366" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C367" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C368" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C369" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C370" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C374" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C370" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C374" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C375" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C376" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C377" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C378" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C379" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C380" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C381" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C382" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C383" class="Cgt" element="C" mass="12.011"/>
-  <Type name="graphite-C384" class="Cgt" element="C" mass="12.011"/>
+  <Type name="graphite-C381" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C382" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C383" class="Cpore" element="C" mass="12.0108"/>
+  <Type name="graphite-C384" class="Cpore" element="C" mass="12.0108"/>
   <Type name="graphite-C385" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C386" class="Cgt" element="C" mass="12.011"/>
   <Type name="graphite-C387" class="Cgt" element="C" mass="12.011"/>
@@ -2716,4 +2716,3 @@
   </Residue>
  </Residues>
 </ForceField>
-

@@ -2,6 +2,8 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 
+import numpy as np
+
 solvents = ["acn", "dce", "h2o"]
 anions = {
     "BF4": "B",
@@ -37,6 +39,7 @@ class PMF_Simulation:
         self.customNonbondedForce = [f for f in [self.system.getForce(i) for i in range(self.system.getNumForces())] if type(f) == CustomNonbondedForce][0]
         self.custombond = [f for f in [self.system.getForce(i) for i in range(self.system.getNumForces())] if type(f) == CustomBondForce][0]
         self.drudeForce = [f for f in [self.system.getForce(i) for i in range(self.system.getNumForces())] if type(f) == DrudeForce][0]
+        self.harmonicBondForce = [f for f in [self.system.getForce(i) for i in range(self.system.getNumForces())] if type(f) == HarmonicBondForce][0]
         self.nbondedForce.setNonbondedMethod(NonbondedForce.PME)
         self.customNonbondedForce.setNonbondedMethod(min(self.nbondedForce.getNonbondedMethod(),NonbondedForce.CutoffPeriodic))
         self.customNonbondedForce.setUseLongRangeCorrection(True)
@@ -62,6 +65,7 @@ class PMF_Simulation:
         print("Using GPU device:", gpuDeviceIndex)
         #properties = {'OpenCLPrecision': 'mixed', 'OpenCLDeviceIndex': gpuDeviceIndex}
         properties = {'Precision': 'mixed'}
+        #properties = {}
 
         self.simmd = Simulation(modeller.topology, self.system, integ_md, platform, properties)
         self.simmd.context.setPositions(modeller.positions)
@@ -92,19 +96,19 @@ class PMF_Simulation:
         ]
         self.simmd.reporters[1].report(self.simmd,state)
 
-    def equilibrate_npt(self, time_ps = 5000, checkpointFile = None):
-        print('Starting NPT Equilibration ({:d} ps)...'.format(time_ps))
+    def equilibrate_npt(self, time_ps = 5000, checkpointFile = None, pressure = 1.0):
+        print('Starting NPT Equilibration ({:d} ps) (pressure: {:f} atm)...'.format(time_ps, pressure))
 
         if checkpointFile is not None:
             print('Using checkpoint, ' + checkpointFile)
             self.simmd.loadCheckpoint(checkpointFile)
             return
 
-        pressure = Vec3(1.0,1.0,1.0)*atmosphere
+        pressure = Vec3(pressure, pressure, pressure)*atmosphere
         barofreq = 100
 
         # allow only the z-dimension to change, graphene x/y layer is fixed
-        barostat = MonteCarloAnisotropicBarostat(pressure,self.temperature,False,False,True,barofreq)
+        barostat = MonteCarloAnisotropicBarostat(pressure, self.temperature, False, False, True, barofreq)
         barostatForceIndex = self.system.addForce(barostat)
 
         state = self.simmd.context.getState(getPositions=True)
@@ -117,14 +121,15 @@ class PMF_Simulation:
 
         for i in range(time_ps):
             self.simmd.step(1000)
-
+            
         self.system.removeForce(barostatForceIndex)
 
         state = self.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
         boxVecs = state.getPeriodicBoxVectors()
         self.system.setDefaultPeriodicBoxVectors(boxVecs[0], boxVecs[1], boxVecs[2])
         self.simmd.topology.setPeriodicBoxVectors(boxVecs)
-        PDBFile.writeFile(self.simmd.topology, state.getPositions(), open(self.outdir + self.filename + '_equil_npt.pdb', 'w'))
+        with open(self.outdir + self.filename + '_equil_npt.pdb', 'w') as npt_file:
+            PDBFile.writeFile(self.simmd.topology, state.getPositions(), npt_file)
 
     def equilibrate_nvt(self, time_ps = 5000, checkpointFile = None):
         print('Starting NVT Equilibration ({:d} ps)...'.format(time_ps))

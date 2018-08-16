@@ -2,8 +2,8 @@ import re
 
 class DiffusionSystem:
     def __init__(self, systemString):
-        output_name_regex = re.compile("\.?/?([0-9])sheet/([a-z]+)/([0-9]+)pore/output_bf4_(.*)_([A-Z0-9]+)diff(_.*)?")
-        sim_path_regex = re.compile("bf4_(.*)_(dce|acn)_(1|2)_(7|10|14)_([A-Z0-9]+)diff(_.*)?")
+        output_name_regex = re.compile("\.?/?([0-9])sheet/([a-z0-9]+)/([0-9]+)pore/output_bf4_(.*)_([A-Z0-9]+)diff(_.*)?")
+        sim_path_regex = re.compile("bf4_(.*)_(dce|acn|h2o)_(1|2)_(7|10|14)_([A-Z0-9]+)diff(_.*)?")
 
         match_out = output_name_regex.match(systemString)
         match_path = sim_path_regex.match(systemString)
@@ -68,6 +68,9 @@ class DiffusionSystem:
 
     def output_name(self):
         return "bf4_{0:s}_{1:s}_{2:s}_{3:s}_{4:s}diff{5:s}".format(self.ion_pair, self.solvent, self.sheetCount, self.poreSize, self.diffusingIon, self.tag)
+
+    def pandas_tuple(self):
+        return (int(self.sheetCount), int(self.poreSize), self.solvent, self.ion_pair, self.diffusingIon)
 
     """
     Checks for a single difference between systems. For comparing systems based on one variable.

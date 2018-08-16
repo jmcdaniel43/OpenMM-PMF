@@ -9,11 +9,11 @@ mkdir -p "pdb"
 
 for j in {1,2}
 do
-    for i in {7,10,14}
+    for i in {10,14}
     do
         cd "ffdir"
-            $root/bin/deleteAtoms.py pore $i $root/setup_data/graph_name.xml > graph_${i}.xml
-            $root/bin/deleteAtoms.py pore $i $root/setup_data/graph_residue.xml > graph_residue_${i}.xml
+            $root/bin/deleteAtoms.py pore $i < $root/construct_system/graph_name.xml > graph_${i}.xml
+            $root/bin/deleteAtoms.py pore $i < $root/construct_system/graph_residue.xml > graph_residue_${i}.xml
         cd ..
 
         cd "pdb"
@@ -22,11 +22,11 @@ do
                 mkdir -p $sys
                 cd $sys
 
-                $root/../../bin/build_electrode.pl $root/../../setup_data/graph.pdb $j > electrode.tmp
-                $root/../../bin/deleteAtoms.py pore $i electrode.tmp > electrode.pdb
+                $root/../../bin/build_electrode.pl $root/../../construct_system/graph.pdb $j > electrode.tmp
+                $root/../../bin/deleteAtoms.py pore $i < electrode.tmp > electrode.pdb
                 rm electrode.tmp
 
-                cat electrode.pdb $root/../../setup_data/${sys}_${solvent}.pdb > SC_start_${j}_${i}.pdb
+                cat electrode.pdb $root/../../construct_system/${sys}_${solvent}.pdb > SC_start_${j}_${i}.pdb
                 rm electrode.pdb
 
                 cd ..

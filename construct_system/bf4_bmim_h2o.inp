@@ -1,0 +1,18 @@
+tolerance  2.0
+output    bf4_bmim_h2o.pdb
+
+structure  BMIM.pdb
+  number 75
+  inside box 3.  3.  20.  40.0  40.0  72.
+end structure
+
+structure  BF4.pdb
+  number 75 
+  inside box 3.  3.  20.  40.0  40.0  72.
+end structure
+
+structure  h2o.pdb
+  number 1500
+  inside box 3.  3.  20.  40.0  40.0  72.
+end structure
+

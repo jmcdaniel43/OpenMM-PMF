@@ -3,16 +3,16 @@ output    bf4_bmim_dce.pdb
 
 structure  BMIM.pdb
   number 50
-  inside box 3.  3.  12.  40.0  40.0  64.
+  inside box 3.  3.  20.  40.0  40.0  72.
 end structure
 
 structure  BF4.pdb
   number 50
-  inside box 3.  3.  12.  40.0  40.0  64.
+  inside box 3.  3.  20.  40.0  40.0  72.
 end structure
 
 structure  dichloroethane.pdb
   number 1000
-  inside box 3.  3.  12.  40.0  40.0  64.
+  inside box 3.  3.  20.  40.0  40.0  72.
 end structure
 

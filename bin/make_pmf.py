@@ -73,7 +73,7 @@ def make_pmf(system, force=False):
     log_name = startingDir + "/output_logs/" + simpath2outputname(system) + ".log"
 
     try:
-        whaminput, pore_center = convert_umbrella_output(open(log_name), 2000, 10000, 60)
+        whaminput, pore_center = convert_umbrella_output(open(log_name), 2000, 60)
     except:
         print("error converting log:", log_name)
         traceback.print_exc()
@@ -88,7 +88,6 @@ def make_pmf(system, force=False):
             if cur > 1: # if the stdev is greater than 1 Angstrom away from the center of the potential
                         # then this window probably has something weird going on
                 print("{:s} stdev is too high {:f} window {:s} (#{:d})".format(system, cur, filename, idx))
-                # return
 
     with open(whaminputFile, "w") as f:
         f.write(whaminput)

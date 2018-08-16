@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from __future__ import division, print_function # python2 defaults to interger division. py3 defaults to floating division
 from MDAnalysis import *
@@ -20,12 +20,13 @@ def rdf(topology,
         rdf_shell = 20,
         integration_shell = 6,
         bulk = False,
-        print_rdf = False,
+        print_rdf = None,
         no_smooth = False,
-        resid = 1):
+        resid = "1",
+        nframes = 6000):
 
     u=Universe(topology, trajectory)
-    framestart = u.trajectory.n_frames - 1199
+    framestart = u.trajectory.n_frames - nframes
 
     # for the newer simulations, the resid is no longer always 1
     # so we can check for the resid in those new sims' logs
@@ -39,24 +40,25 @@ def rdf(topology,
 
             m = residRegex.match(line)
             if m is not None:
-                resid = int(m.group(1))
+                resid = m.group(1)
                 break
 
             i += 1
 
-    ion_group = u.select_atoms(ion_atomselection + " and resid " + str(resid))
+    ion_group = u.select_atoms(ion_atomselection + " and resid " + resid)
     solvent_group = u.select_atoms(solvent_atomselection)
 
-    # print(ion_atomselection)
-    # print(solvent_atomselection)
+    # print(ion_group)
+    # print(solvent_group)
 
     if bulk:
         ion_group += u.select_atoms(ion_atomselection)
 
     rdfs = []
-    for i in range(0,1200,20):
+    window_frames = nframes // 60
+    for i in range(0, nframes, window_frames):
         frame = i + framestart
-        rdf = mdaRDF.InterRDF(ion_group , solvent_group , nbins=100, range=(0.0, rdf_shell), start=frame, stop=frame+19)
+        rdf = mdaRDF.InterRDF(ion_group, solvent_group, nbins=100, range=(0.0, rdf_shell), start=frame, stop=frame + window_frames)
         rdf.run()
         rdfs.append(rdf)
 
@@ -70,19 +72,20 @@ def rdf(topology,
 
     return_strings = []
 
-    for rdf in rdfs:
-        if print_rdf:
-            for i in range(len(rdf.bins)):
-                return_strings.append("%f %f" % (rdf.bins[i], rdf.rdf[i]), end="")
-        else:
+    if print_rdf is not None:
+        for i in range(len(rdfs[print_rdf].bins)):
+            return_strings.append("%f %f" % (rdfs[print_rdf].bins[i], rdfs[print_rdf].rdf[i]))
+
+    else:
+        for rdf in rdfs:
             data = [g * rdf.bins[i]**2 for i, g in enumerate(rdf.rdf[:end])]
             coordinationNum = (4 * 3.14159 * density) * sp.integrate.trapz(data, rdf.bins[:len(data)])
             return_strings.append(coordinationNum)
     
-    if no_smooth:
+    if no_smooth or (print_rdf is not None):
         return return_strings
-    else:
-        return smooth(map(float, return_strings))
+
+    return smooth(map(float, return_strings))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -92,7 +95,7 @@ if __name__ == '__main__':
     parser.add_argument("--rdf_shell", default=20 ,type=int, help="size (in Angstroms) of solvation shell over which to calculate RDF")
     parser.add_argument("--is", "--integration_shell", default=6, type=int, help="size (in Angstroms) of solvation shell over which to integrate", dest="integration_shell")
     parser.add_argument("--bulk", action="store_true", help="whether to calculate the bulk rdf values")
-    parser.add_argument("--print_rdf", action="store_true", help="print rdf values; default print coordination number")
+    parser.add_argument("--print_rdf", default=None, type=int, help="print rdf values for frame <x>; default print coordination number")
     parser.add_argument("--no_smooth", action="store_true", help="do not smooth coordination number output")
     args = parser.parse_args()
 
@@ -100,7 +103,12 @@ if __name__ == '__main__':
     topology = args.datadir + "/md_nvt_prod_start_drudes.pdb"
     trajectory = args.datadir + "/md_nvt_prod.dcd"
 
-    out = rdf(topology, trajectory, **args)
+    out = rdf(topology, trajectory, args.ion_atomselection, args.solvent_atomselection,
+            bulk=args.bulk,
+            integration_shell=args.integration_shell,
+            rdf_shell=args.rdf_shell,
+            print_rdf=args.print_rdf,
+            no_smooth=args.no_smooth)
 
     for i in out:
         print(i)

@@ -13,17 +13,22 @@ startingPotentialDimensionRegex3 = re.compile("Center of umbrella potential \(nm
 zLocationRegex = re.compile("\(" + zDimensionRegexString + "\)")
 startRegex = re.compile("Starting Production")
 dzRegex = re.compile("dz (\d+\.\d+)")
+nstepRegex = re.compile("Namespace\(.*windowSize=(\d+)\)")
 
 boundaryTolerance = 20
 
-def convert_umbrella_output(fileHandle, springConstant, nstep, numbrella):
+def convert_umbrella_output(fileHandle, springConstant, numbrella):
     lines = fileHandle.readlines()
     for line in range(len(lines)): # find start and maximum z dimension from output file
+        nstep_match = nstepRegex.match(lines[line])
         maxZ_match = maxZDimensionRegex.match(lines[line])
         startZ_match1 = startingPotentialDimensionRegex1.match(lines[line])
         startZ_match2 = startingPotentialDimensionRegex2.match(lines[line])
         startZ_match3 = startingPotentialDimensionRegex3.match(lines[line])
         dz_match = dzRegex.match(lines[line])
+
+        if nstep_match is not None:
+            nstep = int(nstep_match.group(1))
 
         if maxZ_match is not None:
             maxZ = float(maxZ_match.group(5)) * 10 # convert nm to angstrom
@@ -98,4 +103,4 @@ if __name__ == "__main__":
     numbrella      = int(sys.argv[4])
 
     with open(sys.argv[1]) as f:
-        print(convert_umbrella_output(f, springConstant, nstep, numbrella)[0])
+        print(convert_umbrella_output(f, springConstant, numbrella)[0])

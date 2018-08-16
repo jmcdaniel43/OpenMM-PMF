@@ -38,7 +38,6 @@
    <Atom name="C35" type="graphite-C35"/> 
    <Atom name="C36" type="graphite-C36"/> 
    <Atom name="C37" type="graphite-C37"/> 
-   <Atom name="C38" type="graphite-C38"/> 
    <Atom name="C39" type="graphite-C39"/> 
    <Atom name="C40" type="graphite-C40"/> 
    <Atom name="C41" type="graphite-C41"/> 
@@ -48,7 +47,6 @@
    <Atom name="C45" type="graphite-C45"/> 
    <Atom name="C46" type="graphite-C46"/> 
    <Atom name="C47" type="graphite-C47"/> 
-   <Atom name="C48" type="graphite-C48"/> 
    <Atom name="C49" type="graphite-C49"/> 
    <Atom name="C50" type="graphite-C50"/> 
    <Atom name="C51" type="graphite-C51"/> 
@@ -58,7 +56,6 @@
    <Atom name="C55" type="graphite-C55"/> 
    <Atom name="C56" type="graphite-C56"/> 
    <Atom name="C57" type="graphite-C57"/> 
-   <Atom name="C58" type="graphite-C58"/> 
    <Atom name="C59" type="graphite-C59"/> 
    <Atom name="C60" type="graphite-C60"/> 
    <Atom name="C61" type="graphite-C61"/> 
@@ -139,7 +136,6 @@
    <Atom name="C136" type="graphite-C136"/> 
    <Atom name="C137" type="graphite-C137"/> 
    <Atom name="C138" type="graphite-C138"/> 
-   <Atom name="C139" type="graphite-C139"/> 
    <Atom name="C140" type="graphite-C140"/> 
    <Atom name="C141" type="graphite-C141"/> 
    <Atom name="C142" type="graphite-C142"/> 
@@ -149,7 +145,6 @@
    <Atom name="C146" type="graphite-C146"/> 
    <Atom name="C147" type="graphite-C147"/> 
    <Atom name="C148" type="graphite-C148"/> 
-   <Atom name="C149" type="graphite-C149"/> 
    <Atom name="C150" type="graphite-C150"/> 
    <Atom name="C151" type="graphite-C151"/> 
    <Atom name="C152" type="graphite-C152"/> 
@@ -159,7 +154,6 @@
    <Atom name="C156" type="graphite-C156"/> 
    <Atom name="C157" type="graphite-C157"/> 
    <Atom name="C158" type="graphite-C158"/> 
-   <Atom name="C159" type="graphite-C159"/> 
    <Atom name="C160" type="graphite-C160"/> 
    <Atom name="C161" type="graphite-C161"/> 
    <Atom name="C162" type="graphite-C162"/> 
@@ -169,7 +163,6 @@
    <Atom name="C166" type="graphite-C166"/> 
    <Atom name="C167" type="graphite-C167"/> 
    <Atom name="C168" type="graphite-C168"/> 
-   <Atom name="C169" type="graphite-C169"/> 
    <Atom name="C170" type="graphite-C170"/> 
    <Atom name="C171" type="graphite-C171"/> 
    <Atom name="C172" type="graphite-C172"/> 
@@ -230,8 +223,6 @@
    <Atom name="C227" type="graphite-C227"/> 
    <Atom name="C228" type="graphite-C228"/> 
    <Atom name="C229" type="graphite-C229"/> 
-   <Atom name="C230" type="graphite-C230"/> 
-   <Atom name="C231" type="graphite-C231"/> 
    <Atom name="C232" type="graphite-C232"/> 
    <Atom name="C233" type="graphite-C233"/> 
    <Atom name="C234" type="graphite-C234"/> 
@@ -239,29 +230,22 @@
    <Atom name="C236" type="graphite-C236"/> 
    <Atom name="C237" type="graphite-C237"/> 
    <Atom name="C238" type="graphite-C238"/> 
-   <Atom name="C239" type="graphite-C239"/> 
-   <Atom name="C242" type="graphite-C242"/> 
    <Atom name="C243" type="graphite-C243"/> 
    <Atom name="C244" type="graphite-C244"/> 
    <Atom name="C245" type="graphite-C245"/> 
    <Atom name="C246" type="graphite-C246"/> 
    <Atom name="C247" type="graphite-C247"/> 
    <Atom name="C248" type="graphite-C248"/> 
-   <Atom name="C253" type="graphite-C253"/> 
    <Atom name="C254" type="graphite-C254"/> 
    <Atom name="C255" type="graphite-C255"/> 
    <Atom name="C256" type="graphite-C256"/> 
    <Atom name="C257" type="graphite-C257"/> 
    <Atom name="C258" type="graphite-C258"/> 
-   <Atom name="C263" type="graphite-C263"/> 
    <Atom name="C264" type="graphite-C264"/> 
    <Atom name="C265" type="graphite-C265"/> 
    <Atom name="C266" type="graphite-C266"/> 
    <Atom name="C267" type="graphite-C267"/> 
    <Atom name="C268" type="graphite-C268"/> 
-   <Atom name="C269" type="graphite-C269"/> 
-   <Atom name="C270" type="graphite-C270"/> 
-   <Atom name="C273" type="graphite-C273"/> 
    <Atom name="C274" type="graphite-C274"/> 
    <Atom name="C275" type="graphite-C275"/> 
    <Atom name="C276" type="graphite-C276"/> 
@@ -269,9 +253,6 @@
    <Atom name="C278" type="graphite-C278"/> 
    <Atom name="C279" type="graphite-C279"/> 
    <Atom name="C280" type="graphite-C280"/> 
-   <Atom name="C281" type="graphite-C281"/> 
-   <Atom name="C282" type="graphite-C282"/> 
-   <Atom name="C283" type="graphite-C283"/> 
    <Atom name="C284" type="graphite-C284"/> 
    <Atom name="C285" type="graphite-C285"/> 
    <Atom name="C286" type="graphite-C286"/> 
@@ -318,8 +299,6 @@
    <Atom name="C327" type="graphite-C327"/> 
    <Atom name="C328" type="graphite-C328"/> 
    <Atom name="C329" type="graphite-C329"/> 
-   <Atom name="C330" type="graphite-C330"/> 
-   <Atom name="C331" type="graphite-C331"/> 
    <Atom name="C332" type="graphite-C332"/> 
    <Atom name="C333" type="graphite-C333"/> 
    <Atom name="C334" type="graphite-C334"/> 
@@ -328,7 +307,6 @@
    <Atom name="C337" type="graphite-C337"/> 
    <Atom name="C338" type="graphite-C338"/> 
    <Atom name="C339" type="graphite-C339"/> 
-   <Atom name="C342" type="graphite-C342"/> 
    <Atom name="C343" type="graphite-C343"/> 
    <Atom name="C344" type="graphite-C344"/> 
    <Atom name="C345" type="graphite-C345"/> 
@@ -336,31 +314,23 @@
    <Atom name="C347" type="graphite-C347"/> 
    <Atom name="C348" type="graphite-C348"/> 
    <Atom name="C349" type="graphite-C349"/> 
-   <Atom name="C353" type="graphite-C353"/> 
    <Atom name="C354" type="graphite-C354"/> 
    <Atom name="C355" type="graphite-C355"/> 
    <Atom name="C356" type="graphite-C356"/> 
    <Atom name="C357" type="graphite-C357"/> 
    <Atom name="C358" type="graphite-C358"/> 
    <Atom name="C359" type="graphite-C359"/> 
-   <Atom name="C364" type="graphite-C364"/> 
    <Atom name="C365" type="graphite-C365"/> 
    <Atom name="C366" type="graphite-C366"/> 
    <Atom name="C367" type="graphite-C367"/> 
    <Atom name="C368" type="graphite-C368"/> 
    <Atom name="C369" type="graphite-C369"/> 
-   <Atom name="C370" type="graphite-C370"/> 
-   <Atom name="C374" type="graphite-C374"/> 
    <Atom name="C375" type="graphite-C375"/> 
    <Atom name="C376" type="graphite-C376"/> 
    <Atom name="C377" type="graphite-C377"/> 
    <Atom name="C378" type="graphite-C378"/> 
    <Atom name="C379" type="graphite-C379"/> 
    <Atom name="C380" type="graphite-C380"/> 
-   <Atom name="C381" type="graphite-C381"/> 
-   <Atom name="C382" type="graphite-C382"/> 
-   <Atom name="C383" type="graphite-C383"/> 
-   <Atom name="C384" type="graphite-C384"/> 
    <Atom name="C385" type="graphite-C385"/> 
    <Atom name="C386" type="graphite-C386"/> 
    <Atom name="C387" type="graphite-C387"/> 
@@ -890,9 +860,6 @@
    <Bond from="C37" to="C137"/>
    <Bond from="C37" to="C138"/>
    <Bond from="C37" to="C148"/>
-   <Bond from="C38" to="C138"/>
-   <Bond from="C38" to="C139"/>
-   <Bond from="C38" to="C149"/>
    <Bond from="C39" to="C130"/>
    <Bond from="C39" to="C140"/>
    <Bond from="C39" to="C339"/>
@@ -920,9 +887,6 @@
    <Bond from="C47" to="C147"/>
    <Bond from="C47" to="C148"/>
    <Bond from="C47" to="C158"/>
-   <Bond from="C48" to="C148"/>
-   <Bond from="C48" to="C149"/>
-   <Bond from="C48" to="C159"/>
    <Bond from="C49" to="C140"/>
    <Bond from="C49" to="C150"/>
    <Bond from="C49" to="C349"/>
@@ -950,9 +914,6 @@
    <Bond from="C57" to="C157"/>
    <Bond from="C57" to="C158"/>
    <Bond from="C57" to="C168"/>
-   <Bond from="C58" to="C158"/>
-   <Bond from="C58" to="C159"/>
-   <Bond from="C58" to="C169"/>
    <Bond from="C59" to="C150"/>
    <Bond from="C59" to="C160"/>
    <Bond from="C59" to="C359"/>
@@ -1079,8 +1040,6 @@
    <Bond from="C109" to="C208"/>
    <Bond from="C119" to="C219"/>
    <Bond from="C129" to="C229"/>
-   <Bond from="C139" to="C239"/>
-   <Bond from="C169" to="C269"/>
    <Bond from="C179" to="C279"/>
    <Bond from="C189" to="C289"/>
    <Bond from="C190" to="C489"/>
@@ -1181,11 +1140,6 @@
    <Bond from="C228" to="C339"/>
    <Bond from="C229" to="C320"/>
    <Bond from="C229" to="C330"/>
-   <Bond from="C230" to="C330"/>
-   <Bond from="C230" to="C331"/>
-   <Bond from="C231" to="C331"/>
-   <Bond from="C231" to="C332"/>
-   <Bond from="C231" to="C342"/>
    <Bond from="C232" to="C332"/>
    <Bond from="C232" to="C333"/>
    <Bond from="C232" to="C343"/>
@@ -1207,10 +1161,6 @@
    <Bond from="C238" to="C338"/>
    <Bond from="C238" to="C339"/>
    <Bond from="C238" to="C349"/>
-   <Bond from="C239" to="C330"/>
-   <Bond from="C242" to="C342"/>
-   <Bond from="C242" to="C343"/>
-   <Bond from="C242" to="C353"/>
    <Bond from="C243" to="C343"/>
    <Bond from="C243" to="C344"/>
    <Bond from="C243" to="C354"/>
@@ -1229,9 +1179,6 @@
    <Bond from="C248" to="C348"/>
    <Bond from="C248" to="C349"/>
    <Bond from="C248" to="C359"/>
-   <Bond from="C253" to="C353"/>
-   <Bond from="C253" to="C354"/>
-   <Bond from="C253" to="C364"/>
    <Bond from="C254" to="C354"/>
    <Bond from="C254" to="C355"/>
    <Bond from="C254" to="C365"/>
@@ -1247,8 +1194,6 @@
    <Bond from="C258" to="C358"/>
    <Bond from="C258" to="C359"/>
    <Bond from="C258" to="C369"/>
-   <Bond from="C263" to="C364"/>
-   <Bond from="C263" to="C374"/>
    <Bond from="C264" to="C364"/>
    <Bond from="C264" to="C365"/>
    <Bond from="C264" to="C375"/>
@@ -1264,11 +1209,6 @@
    <Bond from="C268" to="C368"/>
    <Bond from="C268" to="C369"/>
    <Bond from="C268" to="C379"/>
-   <Bond from="C269" to="C370"/>
-   <Bond from="C270" to="C370"/>
-   <Bond from="C270" to="C381"/>
-   <Bond from="C273" to="C374"/>
-   <Bond from="C273" to="C384"/>
    <Bond from="C274" to="C374"/>
    <Bond from="C274" to="C375"/>
    <Bond from="C274" to="C385"/>
@@ -1289,15 +1229,6 @@
    <Bond from="C280" to="C380"/>
    <Bond from="C280" to="C381"/>
    <Bond from="C280" to="C791"/>
-   <Bond from="C281" to="C381"/>
-   <Bond from="C281" to="C382"/>
-   <Bond from="C281" to="C792"/>
-   <Bond from="C282" to="C382"/>
-   <Bond from="C282" to="C383"/>
-   <Bond from="C282" to="C793"/>
-   <Bond from="C283" to="C383"/>
-   <Bond from="C283" to="C384"/>
-   <Bond from="C283" to="C794"/>
    <Bond from="C284" to="C384"/>
    <Bond from="C284" to="C385"/>
    <Bond from="C284" to="C795"/>

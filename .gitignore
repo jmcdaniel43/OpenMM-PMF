@@ -7,3 +7,4 @@ output_logs
 slurm_scripts
 pdb
 *.pyc
+.ipynb_checkpoints

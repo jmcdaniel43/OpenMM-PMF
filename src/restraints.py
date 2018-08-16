@@ -5,6 +5,7 @@ from simtk.unit import *
 import math
 import numpy as np
 from numpy import linalg, mod
+from numpy.linalg import norm
 
 from simulation import ionAtomNameMap
 
@@ -54,8 +55,7 @@ def findCenterOfPore(sim):
 
     # find pore center
 
-    centerSheets = [graphRes[center1], graphRes[center2],
-            graphRes[interior], graphRes[exterior]]
+    centerSheets = [graphRes[center1], graphRes[center2], graphRes[interior], graphRes[exterior]]
     # make sure that the resids we want match up to the objects we have
     assert centerSheets[0].index == center1
     assert centerSheets[1].index == center2
@@ -92,9 +92,9 @@ def findCenterOfPore(sim):
 
             dr = centerCoordList[0] - nextAtomPosition
             minimum_image_vector = minimum_image_distance(box, dr, box_inv)
-            shift = minimum_image_vector - dr
+            shift = minimum_image_vector - dr # really it is the negative of this, but we're just looking for non-zero terms so that doesn't matter
 
-            if shift.any(): # if the vectors are different: a shift has occured
+            if shift.any(): # if the shift is nonzero, a shift has occured
                 print("Adjusting minimum distance for atom", index, "with shift",  shift)
 
             centerCoordList.append(centerCoordList[0] - minimum_image_vector)
@@ -111,7 +111,7 @@ def minimum_image_distance(box, dr, box_inv = None):
     dr_box = box_inv.dot(dr).getA1() # getA1 flattens [[x,y,z]] (1x3 matrix) to [x,y,z] (vector)
     shift_box = np.array(list(map(lambda x: math.floor(x + 0.5), dr_box)))
 
-    return dr + box.dot(shift_box).getA1()
+    return dr - box.dot(shift_box).getA1()
 
 
 def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
@@ -152,13 +152,24 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
         Distance to move the umbrella after each iteration.
     """
 
+    boxVecs = sim.simmd.context.getState().getPeriodicBoxVectors()
+    boxCenter = np.array([0.0,0.0,0.0])
+    for i in boxVecs:
+        boxCenter += i / nanometer
+    boxCenter /= 2
+
     print('Setting umbrella forces about equilibrated pore')
     centerCoords, interiorCoords, exteriorCoords = findCenterOfPore(sim)
     x0 = centerCoords[0]
     y0 = centerCoords[1]
     z0 = interiorCoords[2] - distanceFromPore
+    print(10 * exteriorCoords, 10 * interiorCoords)
 
-    totalDistanceToTravel = distanceFromPore * 2 + abs(exteriorCoords[2] - interiorCoords[2])
+    rPore = exteriorCoords - interiorCoords
+    periodicPoreLength = minimum_image_distance(np.mat(boxVecs / nanometer), rPore)
+    if (rPore - periodicPoreLength).any():
+        print("modified pore length from", rPore, "to", periodicPoreLength)
+    totalDistanceToTravel = 2*distanceFromPore + abs(periodicPoreLength[2])
     dz = totalDistanceToTravel / numbrella
 
     # find an ion that is close to the pore, and is on the right side of the sheet
@@ -170,13 +181,7 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
                 if atom.name == aname:
                     ions_to_try.append((atom.index, res.id))
 
-    boxVecs = sim.simmd.context.getState().getPeriodicBoxVectors(asNumpy=True)
-    boxCenter = np.array([0.0,0.0,0.0])
-    for i in boxVecs:
-        boxCenter += i / nanometer
-    boxCenter /= 2
-
-    index = -1
+    index = None # just as a safeguard to make sure an error is always raised if this default index is used
     state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
     positions = state.getPositions()
     failure_iterations = 20
@@ -190,13 +195,13 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
                 resid = ion[1]
                 break
 
-        if index != -1:
+        if index is not None:
             break
         else: # run the sim a little bit to move the ions around
             sim.simmd.step(100)
 
     print("Ion index:", index, "Resid:", resid)
-    if index == -1:
+    if index is None:
         raise IndexError("ion index was not found in the system")
 
     # Apply potential
@@ -238,13 +243,27 @@ def restrainGrapheneSheets(sim, restrained_atoms, z0graph):
         GraphForce.addGlobalParameter('y0graph' + str(i), y0graph)
         GraphForce.addGlobalParameter('z0graph', z0graph)
 
+
+def freezeSheets(sim, reset_mass = 0):
+    graph_residues = list(filter(lambda r: r.name == "grph", sim.simmd.topology.residues()))
+    carbon_mass = None
+    for i, res in enumerate(graph_residues):
+        for atom in res._atoms:
+            if carbon_mass is None:
+                carbon_mass = sim.system.getParticleMass(atom.index) / dalton
+
+            sim.system.setParticleMass(atom.index, reset_mass * dalton)
+
+    return carbon_mass
+
 def bondGrapheneSheets(sim, numSheets):
     graph_residues = list(filter(lambda r: r.name == "grph", sim.simmd.topology.residues()))
     print("Restrained atoms ({:d} residues):".format(len(list(graph_residues))))
     restrained_atoms = [[] for y in range(2 * numSheets)]
+
     for i, res in enumerate(graph_residues):
         for atom in res._atoms:
-            if atom.name in map(lambda i: 'C' + str(i), range(0,800,80)):
+            if sim.system.getParticleMass(atom.index) / dalton == 12.0108: # this mass was explicitly changed in the forcefield for atoms on the pore; it's just a marker for the pore-atoms
                 restrained_atoms[i].append(atom)
 
     i = 0
@@ -252,7 +271,10 @@ def bondGrapheneSheets(sim, numSheets):
     while i < len(restrained_atoms):
         for j in range(len(restrained_atoms[i])):
             # make a bond between this sheet and the adjacent one
-            sim.simmd.topology.addBond(restrained_atoms[i][j], restrained_atoms[i + 1][j])
+            print(restrained_atoms[i][j], restrained_atoms[i + 1][j])
+
+            new_bond = sim.harmonicBondForce.addBond(restrained_atoms[i][j].index, restrained_atoms[i + 1][j].index, length=3.4 * angstrom, k=459403.2)
+
         # skip to the next pair of adjacent sheets
         i += 2
 
