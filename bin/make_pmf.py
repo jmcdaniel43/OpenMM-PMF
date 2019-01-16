@@ -54,11 +54,13 @@ def make_pmf(system, force=False):
         os.mkdir("pmf")
     except NotADirectoryError:
         print("system not present:", system)
+        os.chdir(startingDir)
         return False
     except FileExistsError:
         if path.exists("pmf/pmf"):
             print("pmf exists:", system, file=sys.stderr)
             if not force:
+                os.chdir(startingDir)
                 return
             print("overwriting data")
 
@@ -77,6 +79,7 @@ def make_pmf(system, force=False):
     except:
         print("error converting log:", log_name)
         traceback.print_exc()
+        os.chdir(startingDir)
         return False
 
     # check to make sure none of the windows have wild deviations from the expected location of the potential

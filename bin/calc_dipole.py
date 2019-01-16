@@ -90,7 +90,7 @@ def calc_dipole(namesolv, topology, traj, bond_definitions, forcefield, bulk = F
                         if typeD == res._atoms[j].name:
                               indexD = res._atoms[j].index
                               break
-                    if indexD >= 0: 
+                    if indexD >= 0:
                         (qD , sig, eps) = nbondedForce.getParticleParameters(indexD)
                         qstatic = q._value + qD._value
                     else:
@@ -102,14 +102,14 @@ def calc_dipole(namesolv, topology, traj, bond_definitions, forcefield, bulk = F
 
     # get indices solvent molecules
     solvent=[]
-    for res in systemTopology.residues:  
+    for res in systemTopology.residues:
         if res.name == namesolv:
             solvent.append(list(map(lambda a: a.index, res._atoms)))
             if not bulk:
                 break
 
     center_of_charge_atoms = []
-    for res in systemTopology.residues:  
+    for res in systemTopology.residues:
         if res.name == namesolv:
             for atom in res._atoms:
                 atom_name = {
@@ -135,9 +135,9 @@ def calc_dipole(namesolv, topology, traj, bond_definitions, forcefield, bulk = F
     munopolhist=[]
     for i in range(framestart,frameend):
         frame = mdtraj.load_frame(traj, i, top=topology)
-      
-        # calculate dipole of each solvent molecule           
-        for j in range(len(solvent)):        
+
+        # calculate dipole of each solvent molecule
+        for j in range(len(solvent)):
             # make a list of all atom pairs with the charge-carrying center
             res_center = center_of_charge_atoms[j]
             atom_pairs = [[res_center, index] for index in solvent[j]]
@@ -159,7 +159,7 @@ def calc_dipole(namesolv, topology, traj, bond_definitions, forcefield, bulk = F
     print("dipole distribution with polarization")
     for i in range(len(hist1[0])):
        print (hist1[1][i], hist1[0][i])
-     
+
     print("dipole distribution without polarization")
     for i in range(len(hist2[0])):
        print (hist2[1][i], hist2[0][i])

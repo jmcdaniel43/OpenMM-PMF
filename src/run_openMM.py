@@ -59,17 +59,6 @@ def main(args, filename = "md_nvt_prod"):
         trajFreq = args.trajFreq
     )
 
-    Cre = re.compile("C[0-9]+")
-    count = 0
-    for atom in sim.simmd.topology.atoms():
-        if Cre.search(atom.name) is not None:
-            assert atom.index == count
-            count += 1
-        else:
-            break
-
-    print(count)
-
     if args.eqNPT > 0:
         sim.equilibrate_npt(args.eqNPT)
     else:
@@ -99,15 +88,15 @@ def main(args, filename = "md_nvt_prod"):
         print("Running 120ns of 0.02 nm windows")
         numbrella=120
 
-    poreCenter, dz, index = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, args.ion)
+    potentialCenter, dz, index = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, args.ion)
     print("dz", dz)
-    z0 = poreCenter[2]
+    z0 = potentialCenter[2]
 
     restrainGrapheneSheets(sim, restrained_atoms, z0 + distanceFromPore)
 
     boxDims = sim.simmd.topology.getUnitCellDimensions()
     print("Box dimensions: ", boxDims)
-    print("Center of umbrella potential (x,y,z (nm)):", poreCenter[0], poreCenter[1], poreCenter[2])
+    print("Center of umbrella potential (x,y,z (nm)):", potentialCenter[0], potentialCenter[1], potentialCenter[2])
 
     state = sim.simmd.context.getState(getEnergy=True, getForces=True, getVelocities=True, getPositions=True, enforcePeriodicBox=True)
     sim.simmd.context.reinitialize()

@@ -13,7 +13,8 @@ startingPotentialDimensionRegex3 = re.compile("Center of umbrella potential \(nm
 zLocationRegex = re.compile("\(" + zDimensionRegexString + "\)")
 startRegex = re.compile("Starting Production")
 dzRegex = re.compile("dz (\d+\.\d+)")
-nstepRegex = re.compile("Namespace\(.*windowSize=(\d+)\)")
+nstepRegex = re.compile("Namespace\(.*windowSize=(\d+).*\)")
+startingDistanceRegex = re.compile("Namespace\(.*startingDistance\=(\d+(\.d+)?).*\)")
 
 boundaryTolerance = 20
 
@@ -21,6 +22,7 @@ def convert_umbrella_output(fileHandle, springConstant, numbrella):
     lines = fileHandle.readlines()
     for line in range(len(lines)): # find start and maximum z dimension from output file
         nstep_match = nstepRegex.match(lines[line])
+        startingDistance_match = startingDistanceRegex.match(lines[line])
         maxZ_match = maxZDimensionRegex.match(lines[line])
         startZ_match1 = startingPotentialDimensionRegex1.match(lines[line])
         startZ_match2 = startingPotentialDimensionRegex2.match(lines[line])
@@ -29,6 +31,9 @@ def convert_umbrella_output(fileHandle, springConstant, numbrella):
 
         if nstep_match is not None:
             nstep = int(nstep_match.group(1))
+
+        if startingDistance_match is not None:
+            startingDistance = float(startingDistance_match.group(1)) * 10
 
         if maxZ_match is not None:
             maxZ = float(maxZ_match.group(5)) * 10 # convert nm to angstrom
@@ -52,7 +57,12 @@ def convert_umbrella_output(fileHandle, springConstant, numbrella):
     except NameError:
         dz = 0.4 # default value of 0.4A for older simulations
 
-    center_of_pore = start + 10 # all the simulations start 1 nm from the center of the pore
+    try:
+        center_of_pore = start + startingDistance
+        print("startingDistance", startingDistance, "Å")
+    except NameError:
+        center_of_pore = start + 10 # usually simulations start 1 nm from the center of the pore
+        print("startingDistance", 10, "Å")
 
     umbrellas = []
 

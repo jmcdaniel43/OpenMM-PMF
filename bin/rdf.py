@@ -66,7 +66,7 @@ def rdf(topology,
 
     dims = u.trajectory.dimensions
     boxVolume = box_volume(dims)
-    density = solvent_group.n_atoms / boxVolume
+    density = solvent_group.n_residues / boxVolume
 
     # print(boxVolume, density)
 
@@ -85,7 +85,7 @@ def rdf(topology,
     if no_smooth or (print_rdf is not None):
         return return_strings
 
-    return smooth(map(float, return_strings))
+    return smooth([float(x) for x in return_strings])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -18,19 +18,19 @@ from common import DiffusionSystem
 
 startingDir = os.getcwd()
 
-def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False, print_rdf = False):
+def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False):
     os.chdir(startingDir)
 
     if not path.exists(system):
         print("no system exists:", system)
-        return False
+        return []
 
     if path.exists(system + "/" + rdfOutputFile + ".dat"):
         print("coord exists:", system, rdfOutputFile)
         if force:
             print("overwriting")
         else:
-            return False
+            return []
 
     os.chdir(system)
 
@@ -39,43 +39,41 @@ def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False, pr
 
     diff_sys = DiffusionSystem(system)
 
-    try:
-        ion_atom = {
-            "BF4": "B" ,
-            "TMA": "N",
-            "TMEA": "N"
+    ion_atom = {
+        "BF4": "B" ,
+        "TMA": "N",
+        "TMEA": "N"
+    }[diff_sys.diffusingIon]
+
+    if ion:
+        solvent_resname = {
+            "BF4": ("TME or resname TMA", "N"),
+            "TMA": ("BF4", "B"),
+            "TMEA": ("BF4", "B")
         }[diff_sys.diffusingIon]
 
-        if ion:
-            solvent_resname = {
-                "BF4": ("TME or resname TMA", "N"),
-                "TMA": ("BF4", "B"),
-                "TMEA": ("BF4", "B")
-            }[diff_sys.diffusingIon]
-
-            if diff_sys.ion_pair == "bmim":
-                solvent_resname = ("BMI", "N1")
-        else:
-            solvent_resname = {
-                "dce": ("dch", "CT"),
-                "acn": ("acn", "CT"),
-                "h2o": ("HOH", "O"),
-            }[diff_sys.solvent]
+        if diff_sys.ion_pair == "bmim":
+            solvent_resname = ("BMI", "N1")
+    else:
+        solvent_resname = {
+            "dce": ("dch", "CT CT1"),
+            "acn": ("acn", "CT"),
+            "h2o": ("HOH", "O"),
+        }[diff_sys.solvent]
 
 
-        ion_atomselection = "((resname %s) and name %s)" % (diff_sys.diffusingIon[:3], ion_atom)
-        solvent_atomselection = "((resname %s) and name %s)" % (solvent_resname[0][:3], solvent_resname[1])
+    ion_atomselection = "((resname %s) and name %s)" % (diff_sys.diffusingIon[:3], ion_atom)
+    solvent_atomselection = "((resname %s) and name %s)" % (solvent_resname[0][:3], solvent_resname[1])
 
-        coord = rdf(topology, trajectory, ion_atomselection, solvent_atomselection, bulk = bulk)
+    coord = rdf(topology, trajectory, ion_atomselection, solvent_atomselection, bulk = bulk)
 
-    except:
-        print("error calculating rdf:", system)
-        traceback.print_exc()
-        return False
+    smooth_coords = smooth(coord)
 
     with open(rdfOutputFile + ".dat", "w") as f:
-        for i in smooth(coord):
+        for i in smooth_coords:
             f.write(str(i) + "\n")
+
+    return smooth_coords
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

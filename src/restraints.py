@@ -227,7 +227,7 @@ def restrainGrapheneSheets(sim, restrained_atoms, z0graph):
     state = sim.simmd.context.getState(getPositions=True)
     preGrapheneRestraintPositions = state.getPositions()
 
-    all_atoms = [item for sublist in restrained_atoms for item in sublist]
+    all_atoms = [item for sublist in restrained_atoms for item in sublist] # flatten the list of restrained atoms
     all_atoms = map(lambda x: x.index, all_atoms)
     for i, carbon in enumerate(all_atoms):
         x0graph = preGrapheneRestraintPositions[carbon][0] / nanometer

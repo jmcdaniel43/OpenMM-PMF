@@ -30,7 +30,7 @@ def count_counterions_in_pore(
     """
     Counts the number of counterions that are within the pore during specified windows.
 
-    
+
     Parameters
     ----------
 
@@ -100,12 +100,10 @@ def count_counterions(u, ion_group, counterion_group, pore_group, framestart, nf
 
         z_center_of_pore = (z_start + z_end) / 2 # these two atoms' positions are in the same periodic image
 
-        # print(z_start[2], z_end[2], z_center_of_pore[2])
         print_ion = False
         for cion in counterion_group:
             z_pos = reference_atom - minimum_image_disp(box_vectors, reference_atom - cion.position, box_inv)
             if z_pos[2] > z_start[2] and z_pos[2] < z_end[2]:
-                # print(z_pos - z_start)
                 count += 1
                 print_ion = True
 
