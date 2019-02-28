@@ -114,7 +114,7 @@ def minimum_image_distance(box, dr, box_inv = None):
     return dr - box.dot(shift_box).getA1()
 
 
-def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
+def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name, index=None):
     """
     Apply an umbrella potential window at the specified distanceFromPore
     from the edge of the pore for the Boron atom in the first BF4 residue.
@@ -179,26 +179,32 @@ def addIonUmbrellaPotential(sim, distanceFromPore, numbrella, kxy, ion_name):
         if res.name == ion_name:
             for atom in res._atoms:
                 if atom.name == aname:
-                    ions_to_try.append((atom.index, res.id))
+                    if not index: # if no ion index was specified as a function argument
+                        ions_to_try.append((atom.index, res.id))
+                    else:
+                        if atom.index == index:
+                            resid = res.id
+                            break
 
-    index = None # just as a safeguard to make sure an error is always raised if this default index is used
-    state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
-    positions = state.getPositions()
-    failure_iterations = 20
-    for i in range(failure_iterations): # just in case there is not an ion near the starting location
-                                        # we can iterate a few times to wait until ions have diffused
-                                        # seems unlikely for this to be necessary
-        for ion in ions_to_try:
-            z = positions[ion[0]][2] / nanometer
-            if z < interiorCoords[2] and z > boxCenter[2]:
-                index = ion[0]
-                resid = ion[1]
+
+    if not index:
+        state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
+        positions = state.getPositions()
+        failure_iterations = 20
+        for i in range(failure_iterations): # just in case there is not an ion near the starting location
+                                            # we can iterate a few times to wait until ions have diffused
+                                            # seems unlikely for this to be necessary
+            for ion in ions_to_try:
+                z = positions[ion[0]][2] / nanometer
+                if z < interiorCoords[2] and z > boxCenter[2]:
+                    index = ion[0]
+                    resid = ion[1]
+                    break
+
+            if index is not None:
                 break
-
-        if index is not None:
-            break
-        else: # run the sim a little bit to move the ions around
-            sim.simmd.step(100)
+            else: # run the sim a little bit to move the ions around
+                sim.simmd.step(100)
 
     print("Ion index:", index, "Resid:", resid)
     if index is None:

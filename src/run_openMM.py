@@ -88,9 +88,14 @@ def main(args, filename = "md_nvt_prod"):
         print("Running 120ns of 0.02 nm windows")
         numbrella=120
 
-    potentialCenter, dz, index = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, args.ion)
+    index = None
+    if args.restart_ion_index:
+        index = args.restart_ion_index
+
+    potentialCenter, dz, index = addIonUmbrellaPotential(sim, distanceFromPore, numbrella, args.kxy, args.ion, index = index)
     print("dz", dz)
     z0 = potentialCenter[2]
+
 
     restrainGrapheneSheets(sim, restrained_atoms, z0 + distanceFromPore)
 
@@ -101,6 +106,11 @@ def main(args, filename = "md_nvt_prod"):
     state = sim.simmd.context.getState(getEnergy=True, getForces=True, getVelocities=True, getPositions=True, enforcePeriodicBox=True)
     sim.simmd.context.reinitialize()
     sim.simmd.context.setPositions(state.getPositions())
+
+    if args.restart_window > 0:
+        z0 += args.restart_window*dz
+        sim.simmd.context.setParameter('z0',z0)
+        print("restart window: moving window z0 to", z0, ", window", args.restart_window)
 
     # equilibrate 100 picoseconds to ensure ion is in the correct umbrella
     print("Equilibrating to first umbrella window")
@@ -126,7 +136,7 @@ def main(args, filename = "md_nvt_prod"):
     t1 = datetime.now()
 
     # loop over umbrella positions
-    for iu in range(numbrella):
+    for iu in range(args.restart_window, numbrella):
         for i in range(args.windowSize):
             # print position of Boron Atom; first print is starting position
             state = sim.simmd.context.getState(getPositions=True, enforcePeriodicBox=True)
@@ -189,6 +199,8 @@ if __name__ == '__main__':
     parser.add_argument("--startingDistance", type=float, default=1.0, help="distance from the edge of the pore to start the umbrella sampling")
     parser.add_argument("--freezeSheets", action="store_true", help="freeze graphene sheets in place after equilibration")
     parser.add_argument("--eqExcludeGraphene", action="store_true", help="exclude graphene sheets in NPT equilibration")
+    parser.add_argument("--restart_window", type=int, default=0, help="restart the trajectory from a specific umbrella window (zero-indexed)")
+    parser.add_argument("--restart_ion_index", type=int, default=1, help="restart the trajectory with a specific ion index (you probably want to do this)")
 
     args = parser.parse_args()
     print(args)
