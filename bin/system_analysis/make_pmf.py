@@ -72,12 +72,11 @@ def make_pmf(system, force=False):
     #
     ####
 
-    log_name = startingDir + "/output_logs/" + simpath2outputname(system) + ".log"
-
     try:
+        log_name = startingDir + "/output_logs/" + simpath2outputname(system) + ".log"
         whaminput, pore_center = convert_umbrella_output(open(log_name), 2000, 60)
     except:
-        print("error converting log:", log_name)
+        print("error converting log:", system)
         traceback.print_exc()
         os.chdir(startingDir)
         return False

@@ -13,14 +13,9 @@ import argparse
 from multiprocessing import Pool
 
 from rdf import rdf
-from rdf_smoother import smooth
 from common import DiffusionSystem
 
-startingDir = os.getcwd()
-
 def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False):
-    os.chdir(startingDir)
-
     if not path.exists(system):
         print("no system exists:", system)
         return []
@@ -32,10 +27,9 @@ def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False):
         else:
             return []
 
-    os.chdir(system)
-
-    topology =  "md_nvt_prod_start_drudes.pdb"
-    trajectory = "md_nvt_prod.dcd"
+    topology =  system+"/md_nvt_prod_start_drudes.pdb"
+    trajectory = system+"/md_nvt_prod.dcd"
+    output_log = system+"/output.log"
 
     diff_sys = DiffusionSystem(system)
 
@@ -65,11 +59,9 @@ def make_rdf(system, rdfOutputFile, ion = False, bulk = False, force = False):
     ion_atomselection = "((resname %s) and name %s)" % (diff_sys.diffusingIon[:3], ion_atom)
     solvent_atomselection = "((resname %s) and name %s)" % (solvent_resname[0][:3], solvent_resname[1])
 
-    coord = rdf(topology, trajectory, ion_atomselection, solvent_atomselection, bulk = bulk)
+    smooth_coords = rdf(topology, trajectory, output_log, ion_atomselection, solvent_atomselection, bulk = bulk)
 
-    smooth_coords = smooth(coord)
-
-    with open(rdfOutputFile + ".dat", "w") as f:
+    with open(system+"/"+rdfOutputFile + ".dat", "w") as f:
         for i in smooth_coords:
             f.write(str(i) + "\n")
 
